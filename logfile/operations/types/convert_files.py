@@ -20,10 +20,7 @@ class ConvertFiles(OperationBase):
         ExcludeFiles(str):
             Exclude files "messages.0|log.txt"
     """
-
-    def __init__(self):
-        OperationBase.__init__(self)
-
+    
     def instructions_is_valid(self):
         """
         Checking instructions is valid for this file operation
@@ -48,32 +45,43 @@ class ConvertFiles(OperationBase):
             new_extension(str):  New extension to file example: ('.txt')
         """
         path = Path(filepath)
-        new_file = Path(path.parents[0], path.name + new_extension)
-        new_file.write_text(path.read_text())
-        path.unlink()
+        path.rename(Path(path.parents[0], path.name + new_extension))
 
     @staticmethod
     def __list_item_contains_string(arr, item):
         """
         """
         for val in arr:
-            if val.lower() in item.lower():
+            if val in item:
                 return True
         return False
 
     def run(self):
         """
         Converting files with selected instructions
+
+        Returns:
+            bool: True run success, False run failed
         """
-        new_extension = self._get_new_file_extension_instruction()
-        exclude_files = self._get_exclude_files_instruction()
-        exclude_ext = self._get_exclude_extensions_instruction()
-        recursive = self._get_recursive_instruction()
-        relative_file_path = self._get_directory_instruction()
+        try:
+            new_extension = self._get_new_file_extension_instruction()
+            exclude_files = self._get_exclude_files_instruction()
+            exclude_ext = self._get_exclude_extensions_instruction()
+            recursive = self._get_recursive_instruction()
+            relative_file_path = self._get_directory_instruction()
 
-        files = self._get_files(relative_file_path, recursive)
+            files = self._get_files(relative_file_path, recursive)
 
-        for filepath in files:
-            if not self.__list_item_contains_string(exclude_files, filepath) and \
-                not self.__list_item_contains_string(exclude_ext, filepath):
-                self.__convert_file(filepath, new_extension)
+            for filepath in files:
+                if not self.__list_item_contains_string(exclude_files, filepath) and \
+                    not self.__list_item_contains_string(exclude_ext, filepath):
+                    self.__convert_file(filepath, new_extension)
+            return True
+
+        except OSError as exc:
+            print("Convert Files failed '%s'" % exc)
+
+        except KeyError as exc:
+            print("Instructions is invalid '%s'" % exc)
+
+        return False
