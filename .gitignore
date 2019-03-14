@@ -60,6 +60,9 @@ db.sqlite3
 instance/
 .webassets-cache
 
+# Avoid main py that is used for testing
+main.py
+
 # Scrapy stuff:
 .scrapy
 

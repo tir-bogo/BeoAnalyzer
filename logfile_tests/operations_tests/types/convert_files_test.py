@@ -58,41 +58,41 @@ def file_system(tmp_path):
         }
     }
 
-def test_config_is_valid_true():
+def test_instructions_is_valid_true():
     """
-    Testing configuration is valid returns true when a correct configuration is used
+    Testing instructions is valid
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "true",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
-    assert var.config_is_valid(), "This is a valid configuration"
+    var.instructions = instructions
+    assert var.instructions_is_valid(), "This is valid instructions"
 
-def test_config_is_valid_false():
+def test_instructions_is_valid_false():
     """
-    Testing configuration is valid returns false when a incorrect configuration is used
+    Testing instructions is valid
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "true"
         }
     var = ConvertFiles()
-    var.config = config
-    assert not var.config_is_valid(), "This is NOT a valid configuration"
+    var.instructions = instructions
+    assert not var.instructions_is_valid(), "This is NOT valid instructions"
 def test_run_recursive(file_system):
     """
     Testing Operation can run recursive
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "true",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
     var.run()
 
@@ -128,13 +128,13 @@ def test_run_not_recursive(file_system):
     """
     Testing without recursive
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "false",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
     var.run()
 
@@ -162,14 +162,14 @@ def test_run_exclude_file(file_system):
     """
     Testing exclude files are working
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "false",
         "NewFileExtension": ".log",
         "ExcludeFiles":"file1.txt|file2.log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
     var.run()
 
@@ -188,14 +188,14 @@ def test_run_exclude_extension(file_system):
     """
     Testing exclude extension are working
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "false",
         "NewFileExtension": ".log",
         "ExcludeExtensions":".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
     var.run()
 
@@ -217,13 +217,13 @@ def test_run_relative_dir(file_system):
     """
     Testing relative path is working
     """
-    config = {
+    instructions = {
         "Directory":"sub",
         "Recursive": "false",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
     var.run()
 

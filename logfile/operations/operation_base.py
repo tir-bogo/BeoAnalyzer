@@ -10,7 +10,13 @@ class OperationBase(metaclass=abc.ABCMeta):
     """
     def __init__(self):
         self.__workfolder = None
-        self.__config = None
+        self.__instructions = None
+
+        self._directory_instruction_key = "Directory"
+        self._recursive_instruction_key = "Recursive"
+        self._new_file_extension_instruction_key = "NewFileExtension"
+        self._exclude_files_instruction_key = "ExcludeFiles"
+        self._exclude_extensions_instruction_key = "ExcludeExtensions"
 
     @property
     def workfolder(self):
@@ -33,24 +39,78 @@ class OperationBase(metaclass=abc.ABCMeta):
         self.__workfolder = workfolder
 
     @property
-    def config(self):
+    def instructions(self):
         """
-        Get config
+        Get instructions
 
         Returns:
-            dict: Configuration for file operation
+            dict: instructions for file operation
         """
-        return self.__config
+        return self.__instructions
 
-    @config.setter
-    def config(self, config):
+    @instructions.setter
+    def instructions(self, instructions):
         """
-        Set config
+        Set instructions
 
         Args:
-            config(dict): Configuration for file operation
+            instruction(dict): Instructions for file operation
         """
-        self.__config = config
+        self.__instructions = instructions
+
+    def _get_exclude_files_instruction(self):
+        """
+        Get file names to exclude from instructions
+
+        Returns:
+            List<string>: Values to exclude
+            None
+        """
+        if self._exclude_files_instruction_key in self.instructions:
+            value = self.instructions[self._exclude_files_instruction_key]
+            return value.split('|')
+        return []
+
+    def _get_exclude_extensions_instruction(self):
+        """
+        Get file extensions to exclude from instructions
+
+        Returns:
+            List<string>: Values to exclude
+            None
+        """
+        if self._exclude_extensions_instruction_key in self.instructions:
+            value = self.instructions[self._exclude_extensions_instruction_key]
+            return value.split('|')
+        return []
+
+    def _get_recursive_instruction(self):
+        """
+        Get recursive instruction from instructions
+
+        Returns:
+            bool: Recursive behavior enabled
+        """
+        val = self.instructions[self._recursive_instruction_key].lower()
+        return val == "true"
+
+    def _get_directory_instruction(self):
+        """
+        Get directory from instructions
+
+        Returns:
+            str: Directory
+        """
+        return self.instructions[self._directory_instruction_key]
+
+    def _get_new_file_extension_instruction(self):
+        """
+        Get new extension from instructions
+
+        Returns:
+            str: New extension
+        """
+        return self.instructions[self._new_file_extension_instruction_key]
 
     def _get_files(self, relative_filepath, recursive):
         """
@@ -79,17 +139,17 @@ class OperationBase(metaclass=abc.ABCMeta):
         return [str(x) for x in result]
 
     @abc.abstractmethod
-    def config_is_valid(self):
+    def instructions_is_valid(self):
         """
-        Checking if configuration is valid
+        Checking if instructions is valid
 
         Returns:
-            bool: True configuration is valid, False configuration is NOT valid
+            bool: True instructions is valid, False instructions is NOT valid
 
         Raises:
             NotImplementedError: Must be implemented to use this base class
         """
-        raise NotImplementedError("config_is_valid must be defined to use OperationBase class")
+        raise NotImplementedError("instructions_is_valid must be defined to use OperationBase class")
 
     @abc.abstractmethod
     def run(self):

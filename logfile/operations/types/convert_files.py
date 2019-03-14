@@ -23,23 +23,18 @@ class ConvertFiles(OperationBase):
 
     def __init__(self):
         OperationBase.__init__(self)
-        self.__directory_instruction_key = "Directory"
-        self.__recursive_instruction_key = "Recursive"
-        self.__new_file_extension_instruction_key = "NewFileExtension"
-        self.__exclude_files_instruction_key = "ExcludeFiles"
-        self.__exclude_extensions_instruction_key = "ExcludeExtensions"
 
-    def config_is_valid(self):
+    def instructions_is_valid(self):
         """
-        Checking config is valid for this file operation
+        Checking instructions is valid for this file operation
 
         Returns:
-            bool: True configuration is valid, False configuration is NOT valid
+            bool: True instructions is valid, False instructions is NOT valid
         """
-        if self.config is None or \
-           self.__directory_instruction_key not in self.config or \
-           self.__recursive_instruction_key not in self.config or \
-           self.__new_file_extension_instruction_key not in self.config:
+        if self.instructions is None or \
+           self._directory_instruction_key not in self.instructions or \
+           self._recursive_instruction_key not in self.instructions or \
+           self._new_file_extension_instruction_key not in self.instructions:
             return False
         return True
 
@@ -57,60 +52,6 @@ class ConvertFiles(OperationBase):
         new_file.write_text(path.read_text())
         path.unlink()
 
-    def __get_exclude_files_instruction(self):
-        """
-        Get file names to exclude from configuration instructions
-
-        Returns:
-            List<string>: Values to exclude
-            None
-        """
-        if self.__exclude_files_instruction_key in self.config:
-            value = self.config[self.__exclude_files_instruction_key]
-            return value.split('|')
-        return []
-
-    def __get_exclude_extensions_instruction(self):
-        """
-        Get file extensions to exclude from configuration instructions
-
-        Returns:
-            List<string>: Values to exclude
-            None
-        """
-        if self.__exclude_extensions_instruction_key in self.config:
-            value = self.config[self.__exclude_extensions_instruction_key]
-            return value.split('|')
-        return []
-
-    def __get_recursive_instruction(self):
-        """
-        Get recursive instruction from configuration instructions
-
-        Returns:
-            bool: Recursive behavior enabled
-        """
-        val = self.config[self.__recursive_instruction_key].lower()
-        return val == "true"
-
-    def __get_directory_instruction(self):
-        """
-        Get directory from configuration instructions
-
-        Returns:
-            str: Directory
-        """
-        return self.config[self.__directory_instruction_key]
-
-    def __get_new_file_extension_instruction(self):
-        """
-        Get new extension from configuration instructions
-
-        Returns:
-            str: New extension
-        """
-        return self.config[self.__new_file_extension_instruction_key]
-
     @staticmethod
     def __list_item_contains_string(arr, item):
         """
@@ -124,11 +65,11 @@ class ConvertFiles(OperationBase):
         """
         Converting files with selected instructions
         """
-        new_extension = self.__get_new_file_extension_instruction()
-        exclude_files = self.__get_exclude_files_instruction()
-        exclude_ext = self.__get_exclude_extensions_instruction()
-        recursive = self.__get_recursive_instruction()
-        relative_file_path = self.__get_directory_instruction()
+        new_extension = self._get_new_file_extension_instruction()
+        exclude_files = self._get_exclude_files_instruction()
+        exclude_ext = self._get_exclude_extensions_instruction()
+        recursive = self._get_recursive_instruction()
+        relative_file_path = self._get_directory_instruction()
 
         files = self._get_files(relative_file_path, recursive)
 
