@@ -22,7 +22,7 @@ class ConvertFiles(OperationBase):
     """
 
     def __init__(self):
-        OperationBase.__init__(self)
+        super().__init__()
         self.__directory_instruction_key = "Directory"
         self.__recursive_instruction_key = "Recursive"
         self.__new_file_extension_instruction_key = "NewFileExtension"
@@ -53,9 +53,7 @@ class ConvertFiles(OperationBase):
             new_extension(str):  New extension to file example: ('.txt')
         """
         path = Path(filepath)
-        new_file = Path(path.parents[0], path.name + new_extension)
-        new_file.write_text(path.read_text())
-        path.unlink()
+        path.rename(Path(path.parents[0], path.name + new_extension))
 
     def __get_exclude_files_instruction(self):
         """
@@ -116,7 +114,7 @@ class ConvertFiles(OperationBase):
         """
         """
         for val in arr:
-            if val.lower() in item.lower():
+            if val in item:
                 return True
         return False
 
