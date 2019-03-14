@@ -96,6 +96,9 @@ class OperationBase(metaclass=abc.ABCMeta):
         """
         Running the file operation
 
+        Returns:
+            bool: True run success, False run failed
+
         Raises:
             NotImplementedError: Must be implemented to use this base class
         """

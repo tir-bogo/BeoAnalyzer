@@ -121,16 +121,29 @@ class ConvertFiles(OperationBase):
     def run(self):
         """
         Converting files with selected instructions
+
+        Returns:
+            bool: True run success, False run failed
         """
-        new_extension = self.__get_new_file_extension_instruction()
-        exclude_files = self.__get_exclude_files_instruction()
-        exclude_ext = self.__get_exclude_extensions_instruction()
-        recursive = self.__get_recursive_instruction()
-        relative_file_path = self.__get_directory_instruction()
+        try:
+            new_extension = self.__get_new_file_extension_instruction()
+            exclude_files = self.__get_exclude_files_instruction()
+            exclude_ext = self.__get_exclude_extensions_instruction()
+            recursive = self.__get_recursive_instruction()
+            relative_file_path = self.__get_directory_instruction()
 
-        files = self._get_files(relative_file_path, recursive)
+            files = self._get_files(relative_file_path, recursive)
 
-        for filepath in files:
-            if not self.__list_item_contains_string(exclude_files, filepath) and \
-                not self.__list_item_contains_string(exclude_ext, filepath):
-                self.__convert_file(filepath, new_extension)
+            for filepath in files:
+                if not self.__list_item_contains_string(exclude_files, filepath) and \
+                    not self.__list_item_contains_string(exclude_ext, filepath):
+                    self.__convert_file(filepath, new_extension)
+            return True
+
+        except OSError as exc:
+            print("Convert Files failed '%s'" % exc)
+
+        except KeyError as exc:
+            print("Instructions is invalid '%s'" % exc)
+
+        return False
