@@ -1,15 +1,16 @@
 """
 Module contains file operation to unzip files
 """
-import re
-import tarfile
+
 import gzip
+import tarfile
+import logging
+from typing import Optional
 from pathlib import Path
 from logfile.operations.operation_base import OperationBase
 
-#pylint: disable-msg=too-many-arguments
-#pylint: disable-msg=invalid-name
-#pylint: disable-msg=no-else-return
+# pylint: disable=W1203
+# pylint: disable=no-else-return
 
 class UnzipFiles(OperationBase):
     """
@@ -21,226 +22,116 @@ class UnzipFiles(OperationBase):
         Recursive(str):
             False takes current folder, true is recursive through current folder and subs
     """
-
-    def __init__(self):
-        super().__init__(self)
-
-    def instructions_is_valid(self):
-        """
-        Checking instructions is valid for this file operation
-
-        Returns:
-            bool: True instructions is valid, False instructions is NOT valid
-        """
-        if self.instructions is None or \
-           self._directory_instruction_key not in self.instructions or \
-           self._recursive_instruction_key not in self.instructions:
-            return False
-        return True
-
-    def run(self):
-        """
-        Extracting files inside directory with given instructions
-        """
-        files = self._get_files(self._get_directory_instruction(), False)
-        for filepath in files:
-            Extract.extract(filepath, self._get_recursive_instruction())
-
-class Extract:
-    """
-    This class takes care of extracting files
-    """
-
-    file_extensions = ('.tar', '.tgz', '.tbz', '.tb2')
-
     @staticmethod
-    def make_unique_directory_name(directorypath):
+    def extract_tar(filepath: str) -> Optional[str]:
         """
-        This make sure the directory path is always unique
-        To avoid exceptions when creating a new directory
-
-        Example:
-            Directory 'test' is already unique
-                Input   '/home/test'
-                Output  '/home/test'
-
-            Directory 'test' exists
-                Input   '/home/test'
-                Output  '/home/test 1'
-
-            Directory 'test' and 'test1' exists
-                Input   '/home/test'
-                Output  '/home/test 2'
-        Args:
-            directorypath(str): Directory full path to make unique
-
-        Returns:
-            str: Unique directory full path
-        """
-        directorypath = Path(directorypath)
-        if directorypath.exists():
-            parent_path = directorypath.parent
-            match = re.compile("(?P<name>.*)[ ](?P<num>\\d+).*$").match(directorypath.as_posix())
-
-            if match:
-                new_num = int(match.group('num')) + 1
-                new_dir_name = "%s %d" % (match.group('name'), new_num)
-                new_folder = (parent_path / new_dir_name).as_posix()
-                return Extract.make_unique_directory_name(new_folder)
-
-            else:
-                new_dir_name = "%s %d" % (directorypath.stem, 1)
-                new_folder = (parent_path / new_dir_name).as_posix()
-                return Extract.make_unique_directory_name(new_folder)
-
-        return directorypath.as_posix()
-
-    @staticmethod
-    def tar(filepath, extract_to=None, create_dir=True, delete=True):
-        """
-        Extracting tar file or files that have the same extension as file_extensions
+        Extracting tar file
 
         Args:
-            filepath(str):      Filepath to compressed file
-            extract_to(str):    Path to extract to, default is the folder where it is located
-            create_dir(bool):   Creating directory with filename as directory name
-            delete(bool):       Delete file after extracting
+            filepath(str): Filepath to tar file
 
         Returns:
-            str: Folder where files are extracted to
+            str: Directory extracted in
         """
         try:
             filepath = Path(filepath)
 
-            if extract_to is None:
-                extract_to = filepath.parent
-
-            if create_dir:
-                extract_to = (extract_to / filepath.stem).as_posix()
-                extract_to = Extract.make_unique_directory_name(extract_to)
-                print("Create directory '%s'" % extract_to)
-                extract_to = Path(extract_to)
-                extract_to.mkdir()
+            extract_to = filepath.parent / filepath.stem
+            extract_to.mkdir()
 
             filepath = filepath.as_posix()
             extract_to = extract_to.as_posix()
-            print("Extracting '%s' to '%s'" % (filepath, extract_to))
+            logging.debug(f"Extracting '{filepath}' to '{extract_to}'")
 
             tar = tarfile.open(filepath)
             tar.extractall(extract_to)
             tar.close()
-            print("Extracting done")
 
-            if delete:
-                Path(filepath).unlink()
-                print("Deleted file '%s'" % filepath)
+            logging.debug("Deleting file '{filepath}'")
+            Path(filepath).unlink()
 
             return extract_to
 
         except OSError as exc:
-            print("Error while extracting file '%s'" % filepath)
-            print("Message '%s'" % str(exc))
+            logging.warning(f"Error while extracting file '{filepath}' {exc}")
 
     @staticmethod
-    def gz(filepath, extract_to=None, create_dir=False, delete=True):
+    def extract_gz(filepath: str) -> None:
         """
-        Extracting gz file
+        Extract gz file
 
         Args:
-            filepath(str):      Filepath to compressed file
-            extract_to(str):    Path to extract to, default is the folder where it is located
-            create_dir(bool):   Creating directory with filename as directory name
-            delete(bool):       Delete file after extracting
-
-        Returns:
-            str: Folder where files are extracted to
+            filepath(str): Filepath to gz file
         """
         try:
             filepath = Path(filepath)
-            if extract_to is None:
-                extract_to = filepath.parent
-            if create_dir:
-                extract_to = (extract_to / filepath.stem).as_posix()
-                extract_to = Extract.make_unique_directory_name(extract_to)
-                print("Create directory '%s'" % extract_to)
-                extract_to = Path(extract_to)
-                extract_to.mkdir()
-
-            extract_to = (extract_to / filepath.stem).as_posix()
+            extract_to = filepath.parent
             filepath = filepath.as_posix()
 
-            print("Extracting '%s' to '%s'" % (filepath, extract_to))
+            logging.debug(f"Extracting '{filepath}' to '{extract_to}'")
             gzfile = gzip.open(filepath)
             output = open(extract_to, "wb")
             output.write(gzfile.read())
             gzfile.close()
             output.close()
-            print("Extracting done")
-            if delete:
-                Path(filepath).unlink()
-                print("Deleted file '%s'" % filepath)
-            return extract_to
+
+            Path(filepath).unlink()
+            logging.debug("Deleted file '{filepath}'")
 
         except OSError as exc:
-            print("Error while extracting file '%s'" % filepath)
-            print("Message '%s'" % str(exc))
+            logging.warning(f"Error while extracting file '{filepath}' {exc}")
 
     @staticmethod
-    def walk_tree_and_extract(directory_path, delete=True, create_dir=True, gz_create_dir=False):
+    def extract_file(filepath: str) -> Optional[str]:
         """
-        Recursively walk through tree and extract compressed files
+        Extracting tar or gz file
 
         Args:
-            directory_path(str): Directory to start in
-            delete(bool): Delete files after extracting
-            create_dir(bool): Create directories for tar files
-            gz_create_dir(bool): Create directories for gz files
+            filepath(str): Filepath to compressed file
+        Returns:
+            str: Directory where files are extracted to if there is created a new directory
         """
-        directory_path = Path(directory_path)
-        files = list(x for x in directory_path.glob("**/*.*") if x.is_file())
-
-        for filepath in files:
-            extension = filepath.suffix
-            filepath = filepath.as_posix()
-            new_dir = None
-            if extension.lower() in Extract.file_extensions:
-                new_dir = Extract.tar(filepath, create_dir=create_dir, delete=delete)
-
-            elif extension.lower() == '.gz':
-                new_dir = Extract.gz(filepath, create_dir=gz_create_dir, delete=delete)
-
-            if new_dir is not None:
-                Extract.walk_tree_and_extract(new_dir)
+        ext = Path(filepath).suffix.lower()
+        if ext in [".tgz", ".tar"]:
+            return UnzipFiles.extract_tar(filepath)
+        elif ext == ".gz":
+            UnzipFiles.extract_gz(filepath)
+        return None
 
     @staticmethod
-    def extract(filepath, extract_to=None, recursive=True, delete=True,
-                create_dir=True, gz_create_dir=False):
+    def extract(filepath: str, recursive: bool) -> None:
         """
-        Extract single file or recursively through tree
+        Extract compressed file
 
         Args:
-            filepath(str): Filepath of file to extract
-            extract_to(str): Directory to extract files in
-            recursive(bool): Run through tree and extract files
-            delete(bool): Delete files after extracting (takes effect if recursive is true)
-            create_dir(bool): Create directory for tar files (takes effect if recursive is true)
-            gz_create_dir(bool): Create directory for gz files (takes effect if recursive is true)
+            filepath(str): Filepath to compressed file
+            Recursive(bool): Walk through tree and compress files inside
         """
-        ext = Path(filepath).suffix
-        new_dir = None
+        new_dir = UnzipFiles.extract_file(filepath)
 
-        if ext in Extract.file_extensions:
-            new_dir = Extract.tar(filepath, extract_to=extract_to,
-                                  create_dir=True, delete=False)
+        if recursive and new_dir:
+            filepaths = list(x for x in Path(new_dir).glob("**/*.*") if x.is_file())
+            for filep in filepaths:
+                UnzipFiles.extract(filep, recursive)
 
-        elif ext == '.gz':
-            new_dir = Extract.gz(filepath, extract_to=extract_to,
-                                 create_dir=True, delete=False)
+    def run(self) -> bool:
+        """
+        Extracting files inside directory with given instructions
+        """
+        try:
+            directory = self._directory_instruction
+            recursive = self._recursive_instruction
 
-        else:
-            print("Not valid file extension '%s'" % ext)
-            return
+            # Dont enable recursive for this, as we want to only get files from current dir
+            files_in_directory = self._get_files(directory, False)
+            for filepath in files_in_directory:
+                UnzipFiles.extract(filepath, recursive)
+            return True
 
-        if recursive and new_dir is not None:
-            Extract.walk_tree_and_extract(new_dir, delete=delete,
-                                          create_dir=create_dir, gz_create_dir=gz_create_dir)
+        except TypeError as exc:
+            logging.warning(f"Instructions is '{self.instructions}' {exc}")
+
+        except OSError as exc:
+            logging.warning(f"Invalid relative path '{directory}' {exc}")
+
+        return False

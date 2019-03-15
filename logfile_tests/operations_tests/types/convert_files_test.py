@@ -58,9 +58,9 @@ def file_system(tmp_path):
         }
     }
 
-def test_instructions_is_valid_true():
+def test_none_workfolder():
     """
-    Testing instructions is valid
+    Testing run returns false when no valid workfolder is given
     """
     instructions = {
         "Directory":"*",
@@ -69,19 +69,20 @@ def test_instructions_is_valid_true():
         }
     var = ConvertFiles()
     var.instructions = instructions
-    assert var.instructions_is_valid(), "This is valid instructions"
+    run_is_success = var.run()
 
-def test_instructions_is_valid_false():
+    assert not run_is_success, "This should not be able to run"
+
+def test_none_instructions():
     """
-    Testing instructions is valid
+    Testing run returns false when no valid workfolder is given
     """
-    instructions = {
-        "Directory":"*",
-        "Recursive": "true"
-        }
     var = ConvertFiles()
-    var.instructions = instructions
-    assert not var.instructions_is_valid(), "This is NOT valid instructions"
+    var.workfolder = "*"
+    run_is_success = var.run()
+
+    assert not run_is_success, "This should not be able to run"
+
 def test_run_recursive(file_system):
     """
     Testing Operation can run recursive
@@ -94,7 +95,10 @@ def test_run_recursive(file_system):
     var = ConvertFiles()
     var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old files are deleted
     assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
@@ -136,7 +140,10 @@ def test_run_not_recursive(file_system):
     var = ConvertFiles()
     var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old files are deleted
     assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
@@ -171,7 +178,10 @@ def test_run_exclude_file(file_system):
     var = ConvertFiles()
     var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old file is deleted
     assert not file_system["main"]["file3"].exists(), "Main file 3 did not get deleted"
@@ -197,7 +207,10 @@ def test_run_exclude_extension(file_system):
     var = ConvertFiles()
     var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old file is deleted
     assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
@@ -225,7 +238,10 @@ def test_run_relative_dir(file_system):
     var = ConvertFiles()
     var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate main files is not deleted
     assert file_system["main"]["file1"].exists(), "Main file 1 did get deleted"

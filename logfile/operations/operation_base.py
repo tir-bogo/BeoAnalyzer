@@ -8,111 +8,135 @@ class OperationBase(metaclass=abc.ABCMeta):
     """
     Base class for sharing methods across file operations
     """
-    def __init__(self):
-        self.__workfolder = None
-        self.__instructions = None
 
-        self._directory_instruction_key = "Directory"
-        self._recursive_instruction_key = "Recursive"
-        self._new_file_extension_instruction_key = "NewFileExtension"
-        self._exclude_files_instruction_key = "ExcludeFiles"
-        self._exclude_extensions_instruction_key = "ExcludeExtensions"
+    def __init__(self):
+        self._workfolder = None
+        self._instructions = None
 
     @property
-    def workfolder(self):
+    def workfolder(self) -> str:
         """
         Get workfolder
 
         Returns:
             str: workfolder
         """
-        return self.__workfolder
+        return self._workfolder
 
     @workfolder.setter
-    def workfolder(self, workfolder):
+    def workfolder(self, workfolder: str) -> None:
         """
         Set workfolder
 
         Args:
             workfolder (str): New workfolder path to operate from
         """
-        self.__workfolder = workfolder
+        self._workfolder = workfolder
 
     @property
-    def instructions(self):
+    def instructions(self) -> dict:
         """
         Get instructions
 
         Returns:
             dict: instructions for file operation
         """
-        return self.__instructions
+        return self._instructions
 
     @instructions.setter
-    def instructions(self, instructions):
+    def instructions(self, instructions: dict) -> None:
         """
         Set instructions
 
         Args:
             instruction(dict): Instructions for file operation
         """
-        self.__instructions = instructions
+        self._instructions = instructions
 
-    def _get_exclude_files_instruction(self):
+    @property
+    def _exclude_files_instruction(self) -> list:
         """
         Get file names to exclude from instructions
 
         Returns:
             List<string>: Values to exclude
-            None
+
+        Raises:
+            TypeError: self.instructions is None
         """
-        if self._exclude_files_instruction_key in self.instructions:
-            value = self.instructions[self._exclude_files_instruction_key]
+        exclude_files_key = "ExcludeFiles"
+        if exclude_files_key in self.instructions:
+            value = self.instructions[exclude_files_key]
             return value.split('|')
         return []
 
-    def _get_exclude_extensions_instruction(self):
+    @property
+    def _exclude_extensions_instruction(self) -> list:
         """
         Get file extensions to exclude from instructions
 
         Returns:
             List<string>: Values to exclude
-            None
+
+        Raises:
+            TypeError: self.instructions is None
         """
-        if self._exclude_extensions_instruction_key in self.instructions:
-            value = self.instructions[self._exclude_extensions_instruction_key]
+        exclude_extensions_key = "ExcludeExtensions"
+        if exclude_extensions_key in self.instructions:
+            value = self.instructions[exclude_extensions_key]
             return value.split('|')
         return []
 
-    def _get_recursive_instruction(self):
+    @property
+    def _recursive_instruction(self) -> bool:
         """
         Get recursive instruction from instructions
 
         Returns:
             bool: Recursive behavior enabled
-        """
-        val = self.instructions[self._recursive_instruction_key].lower()
-        return val == "true"
 
-    def _get_directory_instruction(self):
+        Raises:
+            TypeError: self.instructions is None
+        """
+        recursive_key = "Recursive"
+        if recursive_key in self.instructions:
+            val = self.instructions[recursive_key].lower()
+            return val == "true"
+        return False
+
+    @property
+    def _directory_instruction(self) -> str:
         """
         Get directory from instructions
 
         Returns:
             str: Directory
-        """
-        return self.instructions[self._directory_instruction_key]
 
-    def _get_new_file_extension_instruction(self):
+        Raises:
+            TypeError: self.instructions is None
+        """
+        directory_key = "Directory"
+        if directory_key in self.instructions:
+            return self.instructions[directory_key]
+        return "*"
+
+    @property
+    def _new_file_extension_instruction(self) -> str:
         """
         Get new extension from instructions
 
         Returns:
             str: New extension
-        """
-        return self.instructions[self._new_file_extension_instruction_key]
 
-    def _get_files(self, relative_filepath, recursive):
+        Raises:
+            TypeError: self.instructions is None
+        """
+        new_file_extension_key = "NewFileExtension"
+        if new_file_extension_key in self.instructions:
+            return self.instructions[new_file_extension_key]
+        return ""
+
+    def _get_files(self, relative_filepath: str, recursive: bool) -> list:
         """
         Get files from directory
 
@@ -139,20 +163,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         return [str(x) for x in result]
 
     @abc.abstractmethod
-    def instructions_is_valid(self):
-        """
-        Checking if instructions is valid
-
-        Returns:
-            bool: True instructions is valid, False instructions is NOT valid
-
-        Raises:
-            NotImplementedError: Must be implemented to use this base class
-        """
-        raise NotImplementedError("instructions_is_valid must be defined to use OperationBase class")
-
-    @abc.abstractmethod
-    def run(self):
+    def run(self) -> bool:
         """
         Running the file operation
 
@@ -162,4 +173,4 @@ class OperationBase(metaclass=abc.ABCMeta):
         Raises:
             NotImplementedError: Must be implemented to use this base class
         """
-        raise NotImplementedError("run must be defined to use OperationBase class")
+        raise NotImplementedError("run must be defined")
