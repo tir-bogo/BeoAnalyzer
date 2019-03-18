@@ -2,7 +2,10 @@
 Module contains file operation to convert files to new extensions
 """
 from pathlib import Path
+import logging
 from logfile.operations.operation_base import OperationBase
+
+# pylint: disable=W1203
 
 class ConvertFiles(OperationBase):
     """
@@ -21,30 +24,8 @@ class ConvertFiles(OperationBase):
             Exclude files "messages.0|log.txt"
     """
 
-    def __init__(self):
-        super().__init__()
-        self.__directory_instruction_key = "Directory"
-        self.__recursive_instruction_key = "Recursive"
-        self.__new_file_extension_instruction_key = "NewFileExtension"
-        self.__exclude_files_instruction_key = "ExcludeFiles"
-        self.__exclude_extensions_instruction_key = "ExcludeExtensions"
-
-    def config_is_valid(self):
-        """
-        Checking config is valid for this file operation
-
-        Returns:
-            bool: True configuration is valid, False configuration is NOT valid
-        """
-        if self.config is None or \
-           self.__directory_instruction_key not in self.config or \
-           self.__recursive_instruction_key not in self.config or \
-           self.__new_file_extension_instruction_key not in self.config:
-            return False
-        return True
-
     @staticmethod
-    def __convert_file(filepath, new_extension):
+    def _convert_file(filepath: str, new_extension: str) -> None:
         """
         Convert file to new extension and deletes the old file
 
@@ -52,73 +33,36 @@ class ConvertFiles(OperationBase):
             filepath(str): Full filepath to file
             new_extension(str):  New extension to file example: ('.txt')
         """
-        path = Path(filepath)
-        path.rename(Path(path.parents[0], path.name + new_extension))
-
-    def __get_exclude_files_instruction(self):
-        """
-        Get file names to exclude from configuration instructions
-
-        Returns:
-            List<string>: Values to exclude
-            None
-        """
-        if self.__exclude_files_instruction_key in self.config:
-            value = self.config[self.__exclude_files_instruction_key]
-            return value.split('|')
-        return []
-
-    def __get_exclude_extensions_instruction(self):
-        """
-        Get file extensions to exclude from configuration instructions
-
-        Returns:
-            List<string>: Values to exclude
-            None
-        """
-        if self.__exclude_extensions_instruction_key in self.config:
-            value = self.config[self.__exclude_extensions_instruction_key]
-            return value.split('|')
-        return []
-
-    def __get_recursive_instruction(self):
-        """
-        Get recursive instruction from configuration instructions
-
-        Returns:
-            bool: Recursive behavior enabled
-        """
-        val = self.config[self.__recursive_instruction_key].lower()
-        return val == "true"
-
-    def __get_directory_instruction(self):
-        """
-        Get directory from configuration instructions
-
-        Returns:
-            str: Directory
-        """
-        return self.config[self.__directory_instruction_key]
-
-    def __get_new_file_extension_instruction(self):
-        """
-        Get new extension from configuration instructions
-
-        Returns:
-            str: New extension
-        """
-        return self.config[self.__new_file_extension_instruction_key]
+        try:
+            path = Path(filepath)
+            new_path = Path(path.parents[0], path.name + new_extension)
+            path.rename(new_path)
+            logging.debug(f"Converted file '{path}' to '{new_extension}'")
+        except OSError as exc:
+            logging.warning(f"Could not convert file '{path}' to '{new_extension}' {exc}")
 
     @staticmethod
-    def __list_item_contains_string(arr, item):
+    def __list_item_contains_string(arr: list, item: str) -> bool:
         """
+        Checks if any part in a list match a string
+        Example:
+            item = 'c:/windows/llll/file.1h'
+            arr = ['file.1h', 'ttt' , 'yyy']
+            returns True
+
+        Args:
+            arr(list): List of string
+            item(str): Item to search for
+
+        Returns:
+            bool: Item is found
         """
         for val in arr:
             if val in item:
                 return True
         return False
 
-    def run(self):
+    def run(self) -> bool:
         """
         Converting files with selected instructions
 
@@ -126,24 +70,26 @@ class ConvertFiles(OperationBase):
             bool: True run success, False run failed
         """
         try:
-            new_extension = self.__get_new_file_extension_instruction()
-            exclude_files = self.__get_exclude_files_instruction()
-            exclude_ext = self.__get_exclude_extensions_instruction()
-            recursive = self.__get_recursive_instruction()
-            relative_file_path = self.__get_directory_instruction()
+            new_extension = self._new_file_extension_instruction
+            exclude_files = self._exclude_files_instruction
+            exclude_ext = self._exclude_extensions_instruction
+            recursive = self._recursive_instruction
+            relative_file_path = self._directory_instruction
 
             files = self._get_files(relative_file_path, recursive)
 
             for filepath in files:
-                if not self.__list_item_contains_string(exclude_files, filepath) and \
-                    not self.__list_item_contains_string(exclude_ext, filepath):
-                    self.__convert_file(filepath, new_extension)
+                if self.__list_item_contains_string(exclude_files, filepath) or \
+                   self.__list_item_contains_string(exclude_ext, filepath):
+                    logging.debug(f"Skip convert file: '{filepath}'")
+                else:
+                    self._convert_file(filepath, new_extension)
             return True
 
-        except OSError as exc:
-            print("Convert Files failed '%s'" % exc)
+        except TypeError as exc:
+            logging.warning(f"Instructions is '{self.instructions}' {exc}")
 
-        except KeyError as exc:
-            print("Instructions is invalid '%s'" % exc)
+        except OSError as exc:
+            logging.warning(f"Invalid relative path '{relative_file_path}' {exc}")
 
         return False

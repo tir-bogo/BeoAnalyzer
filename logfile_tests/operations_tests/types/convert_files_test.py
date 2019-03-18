@@ -58,43 +58,47 @@ def file_system(tmp_path):
         }
     }
 
-def test_config_is_valid_true():
+def test_none_workfolder():
     """
-    Testing configuration is valid returns true when a correct configuration is used
+    Testing run returns false when no valid workfolder is given
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "true",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
-    assert var.config_is_valid(), "This is a valid configuration"
+    var.instructions = instructions
+    run_is_success = var.run()
 
-def test_config_is_valid_false():
+    assert not run_is_success, "This should not be able to run"
+
+def test_none_instructions():
     """
-    Testing configuration is valid returns false when a incorrect configuration is used
+    Testing run returns false when no valid workfolder is given
     """
-    config = {
-        "Directory":"*",
-        "Recursive": "true"
-        }
     var = ConvertFiles()
-    var.config = config
-    assert not var.config_is_valid(), "This is NOT a valid configuration"
+    var.workfolder = "*"
+    run_is_success = var.run()
+
+    assert not run_is_success, "This should not be able to run"
+
 def test_run_recursive(file_system):
     """
     Testing Operation can run recursive
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "true",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old files are deleted
     assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
@@ -128,15 +132,18 @@ def test_run_not_recursive(file_system):
     """
     Testing without recursive
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "false",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old files are deleted
     assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
@@ -162,16 +169,19 @@ def test_run_exclude_file(file_system):
     """
     Testing exclude files are working
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "false",
         "NewFileExtension": ".log",
         "ExcludeFiles":"file1.txt|file2.log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old file is deleted
     assert not file_system["main"]["file3"].exists(), "Main file 3 did not get deleted"
@@ -188,16 +198,19 @@ def test_run_exclude_extension(file_system):
     """
     Testing exclude extension are working
     """
-    config = {
+    instructions = {
         "Directory":"*",
         "Recursive": "false",
         "NewFileExtension": ".log",
         "ExcludeExtensions":".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate old file is deleted
     assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
@@ -217,15 +230,18 @@ def test_run_relative_dir(file_system):
     """
     Testing relative path is working
     """
-    config = {
+    instructions = {
         "Directory":"sub",
         "Recursive": "false",
         "NewFileExtension": ".log"
         }
     var = ConvertFiles()
-    var.config = config
+    var.instructions = instructions
     var.workfolder = str(file_system["main"]["dir"])
-    var.run()
+    run_is_success = var.run()
+
+    # Validate run method was a success
+    assert run_is_success, "This should run without any problems"
 
     # Validate main files is not deleted
     assert file_system["main"]["file1"].exists(), "Main file 1 did get deleted"
