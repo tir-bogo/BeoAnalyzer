@@ -32,6 +32,7 @@ class UnzipFiles(OperationBase):
 
         Returns:
             str: Directory extracted in
+            None: Tar extracting failed
         """
         try:
             filepath = Path(filepath)
