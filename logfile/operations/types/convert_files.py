@@ -44,11 +44,10 @@ class ConvertFiles(OperationBase):
     @staticmethod
     def __list_item_contains_string(arr: list, item: str) -> bool:
         """
-        Checks if list items contains part of a string
-
+        Checks if any part in a list match a string
         Example:
-            item = '1h'
-            arr = ['ge1h', 'ttt' , 'yyy']
+            item = 'c:/windows/llll/file.1h'
+            arr = ['file.1h', 'ttt' , 'yyy']
             returns True
 
         Args:
@@ -80,8 +79,10 @@ class ConvertFiles(OperationBase):
             files = self._get_files(relative_file_path, recursive)
 
             for filepath in files:
-                if not self.__list_item_contains_string(exclude_files, filepath) and \
-                    not self.__list_item_contains_string(exclude_ext, filepath):
+                if self.__list_item_contains_string(exclude_files, filepath) or \
+                   self.__list_item_contains_string(exclude_ext, filepath):
+                    logging.debug(f"Skip convert file: '{filepath}'")
+                else:
                     self._convert_file(filepath, new_extension)
             return True
 
