@@ -42,7 +42,7 @@ class ConvertFiles(OperationBase):
             logging.warning(f"Could not convert file '{path}' to '{new_extension}' {exc}")
 
     @staticmethod
-    def __list_item_contains_string(arr: list, item: str) -> bool:
+    def _list_item_in_string(arr: list, item: str) -> bool:
         """
         Checks if any part in a list match a string
         Example:
@@ -79,8 +79,8 @@ class ConvertFiles(OperationBase):
             files = self._get_files(relative_file_path, recursive)
 
             for filepath in files:
-                if self.__list_item_contains_string(exclude_files, filepath) or \
-                   self.__list_item_contains_string(exclude_ext, filepath):
+                if self._list_item_in_string(exclude_files, filepath) or \
+                   self._list_item_in_string(exclude_ext, filepath):
                     logging.debug(f"Skip convert file: '{filepath}'")
                 else:
                     self._convert_file(filepath, new_extension)
