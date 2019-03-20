@@ -1,6 +1,7 @@
 """
 Module contains tests for PrettyJson class
 """
+from pathlib import Path
 import pytest
 from logfile.operations.types.pretty_json import PrettyJson
 
@@ -28,29 +29,54 @@ def file_system(tmp_path):
         }
     }
 
-def test_no_valid_workfolder():
+def test_pretty_print_file(file_system):
     """
-    Testing run returns false if there is no workfolder
     """
-    var = PrettyJson()
-    result = var.run()
+    target = file_system["main"]["file1"].as_posix()
+    result = PrettyJson.pretty_print_file(target)
 
-    assert not result, "The workfolder is None, this should return False"
-
-def test_pretty_print(file_system):
-    """
-    Testing pretty print is working
-    """
-    var = PrettyJson()
-    var.workfolder = file_system["main"]["dir"].as_posix()
-    result = var.run()
-
-    assert result, "This should be able to run"
-
-    assert file_system["main"]["file1"].exists(), "Main file1 should exists"
+    assert result, "Not expected return"
+    assert Path(target).exists(), "File should not be deleted"
 
     expected = ["{", "\"hello\": \"Main\"", "}"]
 
-    with open(file_system["main"]["file1"].as_posix()) as filecontent:
+    with open(target) as filecontent:
         for counter, line in enumerate(filecontent):
             assert expected[counter] == line.strip(), "Not expected result"
+
+
+def test_pretty_print_file_arg_none():
+    """
+    """
+    target = None
+    result = PrettyJson.pretty_print_file(target)
+
+    assert not result, "Not expected return"
+
+def test_pretty_print_file_invalid_path():
+    """
+    """
+    target = "Invalid/path/test.txt"
+    result = PrettyJson.pretty_print_file(target)
+
+    assert not result, "Not expected return"
+
+def test_run_workfolder_none():
+    """
+    """
+    var = PrettyJson(None, None)
+    assert not var.run(), "This should not be able to run"
+
+def test_run_invalid_workfolder():
+    """
+    """
+    target = "Invalid/path/test.txt"
+    var = PrettyJson(target, None)
+    assert not var.run(), "This should not be able to run"
+
+def test_run(file_system):
+    """
+    """
+    target = file_system["main"]["dir"].as_posix()
+    var = PrettyJson(target, None)
+    assert var.run(), "This should be able to run"
