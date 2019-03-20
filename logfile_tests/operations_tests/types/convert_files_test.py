@@ -1,6 +1,7 @@
 """
 Module contains tests for ConvertFiles class
 """
+from pathlib import Path
 import pytest
 from logfile.operations.types.convert_files import ConvertFiles
 
@@ -58,207 +59,198 @@ def file_system(tmp_path):
         }
     }
 
-def test_none_workfolder():
+def test_list_item_in_string_match():
     """
-    Testing run returns false when no valid workfolder is given
     """
-    instructions = {
-        "Directory":"*",
-        "Recursive": "true",
-        "NewFileExtension": ".log"
-        }
-    var = ConvertFiles()
-    var.instructions = instructions
-    run_is_success = var.run()
+    test_item = "c:/test/path/file.txt"
+    test_arr = [".txt", ".log", ".exe"]
+    assert ConvertFiles.list_item_in_string(test_arr, test_item), "Expected to be found"
 
-    assert not run_is_success, "This should not be able to run"
-
-def test_none_instructions():
+def test_list_item_in_string_no_match():
     """
-    Testing run returns false when no valid workfolder is given
     """
-    var = ConvertFiles()
-    var.workfolder = "*"
-    run_is_success = var.run()
+    test_item = "c:/test/path/file.txt"
+    test_arr = [".log", ".exe"]
+    assert not ConvertFiles.list_item_in_string(test_arr, test_item), "Expected not to be found"
 
-    assert not run_is_success, "This should not be able to run"
+def test_list_item_in_string_arg_item_none():
+    """
+    """
+    test_arr = [".log", ".exe"]
+    assert not ConvertFiles.list_item_in_string(test_arr, None), "Expected not to be found"
+
+def test_list_item_in_string_arg_arr_none():
+    """
+    """
+    test_item = "c:/test/path/file.txt"
+    assert not ConvertFiles.list_item_in_string(None, test_item), "Expected not to be found"
+
+def test_convert_file(file_system):
+    """
+    """
+    filepath = file_system["main"]["file1"].as_posix()
+    result = ConvertFiles.convert_file(filepath, ".log")
+    main_file1 = file_system["main"]["file1"].parent / (file_system["main"]["file1"].name + ".log")
+    
+    assert result, "This should be able to run"
+    assert main_file1.exists(), "File is not converted correct"
+
+def test_convert_file_do_not_exists():
+    """
+    """
+    result = ConvertFiles.convert_file("path/invalid/test.txt", ".log")
+    assert not result, "Cant convert that do not exists"
+
+def test_convert_file_arg_filepath_none():
+    """
+    """
+    result = ConvertFiles.convert_file(None, ".log")
+    assert not result, "Cant convert that do not exists"
+
+def test_convert_file_arg_new_extension_none(file_system):
+    """
+    """
+    filepath = file_system["main"]["file1"].as_posix()
+    result = ConvertFiles.convert_file(filepath, None)
+    assert not result, "Cant convert that do not have a new extension"
+
+def test_sort_files_match():
+    """
+    """
+    test_filter = [".txt", ".exe"]
+    test_filepaths = ["c:/test.txt", "c:/test2.exe", "c:/test3.log", "c:/test4.mov"]
+    result = ConvertFiles.sort_files(test_filepaths, test_filter)
+    assert len(result) == 2, "Expected 2 items"
+    assert result[0] == test_filepaths[2], "Not expected string"
+    assert result[1] == test_filepaths[3], "Not expected string"
+
+def test_sort_files_no_match():
+    """
+    """
+    test_filter = [".dox", ".email"]
+    test_filepaths = ["c:/test.txt", "c:/test2.exe", "c:/test3.log", "c:/test4.mov"]
+    result = ConvertFiles.sort_files(test_filepaths, test_filter)
+    assert len(result) == 4, "Expected 4 items"
+
+def test_sort_files_arg_files_none():
+    """
+    """
+    test_filter = [".dox", ".email"]
+    result = ConvertFiles.sort_files(None, test_filter)
+    assert result == [], "Expected 0 items"
+
+def test_sort_files_arg_items_none():
+    """
+    """
+    test_filepaths = ["c:/test.txt", "c:/test2.exe", "c:/test3.log", "c:/test4.mov"]
+    result = ConvertFiles.sort_files(test_filepaths, None)
+    assert len(result) == 4, "Expected 4 items"
+
+def test_run_invalid_workfolder():
+    """
+    """
+    test_workfolder = None
+    test_instructions = {
+        "Directory" : "*",
+        "Recursive" : "True",
+        "NewExtension" : ".log"
+    }
+    var = ConvertFiles(test_workfolder, test_instructions)
+    assert not var.run(), "This should return False"
 
 def test_run_recursive(file_system):
     """
-    Testing Operation can run recursive
     """
-    instructions = {
-        "Directory":"*",
-        "Recursive": "true",
-        "NewFileExtension": ".log"
-        }
-    var = ConvertFiles()
-    var.instructions = instructions
-    var.workfolder = str(file_system["main"]["dir"])
-    run_is_success = var.run()
+    test_workfolder = file_system["main"]["dir"]
+    test_instructions = {
+        "Directory" : "*",
+        "Recursive" : "True",
+        "NewExtension" : ".log"
+    }
+    var = ConvertFiles(test_workfolder, test_instructions)
+    assert var.run(), "This should return True"
 
-    # Validate run method was a success
-    assert run_is_success, "This should run without any problems"
-
-    # Validate old files are deleted
-    assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
-    assert not file_system["main"]["file2"].exists(), "Main file 2 did not get deleted"
-    assert not file_system["main"]["file3"].exists(), "Main file 3 did not get deleted"
-
-    assert not file_system["sub"]["file1"].exists(), "Sub file 1 did not get deleted"
-    assert not file_system["sub"]["file2"].exists(), "Sub file 2 did not get deleted"
-    assert not file_system["sub"]["file3"].exists(), "Sub file 3 did not get deleted"
-
-    # Validate new files are created
-    main_file1 = file_system["main"]["file1"].parent / (file_system["main"]["file1"].name + ".log")
-    assert main_file1.exists(), "Main file 1 did not get converted"
-
-    main_file2 = file_system["main"]["file2"].parent / (file_system["main"]["file2"].name + ".log")
-    assert main_file2.exists(), "Main file 2 did not get converted"
-
-    main_file3 = file_system["main"]["file3"].parent / (file_system["main"]["file3"].name + ".log")
-    assert main_file3.exists(), "Main file 3 did not get converted"
-
-    sub_file1 = file_system["sub"]["file1"].parent / (file_system["sub"]["file1"].name + ".log")
-    assert sub_file1.exists(), "Sub file 1 did not get converted"
-
-    sub_file2 = file_system["sub"]["file2"].parent / (file_system["sub"]["file2"].name + ".log")
-    assert sub_file2.exists(), "Sub file 2 did not get converted"
-
-    sub_file3 = file_system["sub"]["file3"].parent / (file_system["sub"]["file3"].name + ".log")
-    assert sub_file3.exists(), "Sub file 3 did not get converted"
+    main_file1 = Path(file_system["main"]["file1"].as_posix() + ".log")
+    sub_file1 = Path(file_system["sub"]["file1"].as_posix() + ".log")
+    
+    assert main_file1.exists(), "This should exists"
+    assert sub_file1.exists(), "This should exists"
 
 def test_run_not_recursive(file_system):
     """
-    Testing without recursive
     """
-    instructions = {
-        "Directory":"*",
-        "Recursive": "false",
-        "NewFileExtension": ".log"
-        }
-    var = ConvertFiles()
-    var.instructions = instructions
-    var.workfolder = str(file_system["main"]["dir"])
-    run_is_success = var.run()
+    test_workfolder = file_system["main"]["dir"]
+    test_instructions = {
+        "Directory" : "*",
+        "Recursive" : "False",
+        "NewExtension" : ".log"
+    }
+    var = ConvertFiles(test_workfolder, test_instructions)
+    assert var.run(), "This should return True"
 
-    # Validate run method was a success
-    assert run_is_success, "This should run without any problems"
+    main_file1 = Path(file_system["main"]["file1"].as_posix() + ".log")
+    sub_file1 = Path(file_system["sub"]["file1"].as_posix() + ".log")
+    
+    assert main_file1.exists(), "This should exists"
+    assert not sub_file1.exists(), "This should not exists"
 
-    # Validate old files are deleted
-    assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
-    assert not file_system["main"]["file2"].exists(), "Main file 2 did not get deleted"
-    assert not file_system["main"]["file3"].exists(), "Main file 3 did not get deleted"
-
-    # Validate sub files are not deleted
-    assert file_system["sub"]["file1"].exists(), "Sub file 1 did get deleted"
-    assert file_system["sub"]["file2"].exists(), "Sub file 2 did get deleted"
-    assert file_system["sub"]["file3"].exists(), "Sub file 3 did get deleted"
-
-    # Validate new files
-    main_file1 = file_system["main"]["file1"].parent / (file_system["main"]["file1"].name + ".log")
-    assert main_file1.exists(), "Main file 1 did not get converted"
-
-    main_file2 = file_system["main"]["file2"].parent / (file_system["main"]["file2"].name + ".log")
-    assert main_file2.exists(), "Main file 2 did not get converted"
-
-    main_file3 = file_system["main"]["file3"].parent / (file_system["main"]["file3"].name + ".log")
-    assert main_file3.exists(), "Main file 3 did not get converted"
-
-def test_run_exclude_file(file_system):
+def test_run_instruction_none(file_system):
     """
-    Testing exclude files are working
     """
-    instructions = {
-        "Directory":"*",
-        "Recursive": "false",
-        "NewFileExtension": ".log",
-        "ExcludeFiles":"file1.txt|file2.log"
-        }
-    var = ConvertFiles()
-    var.instructions = instructions
-    var.workfolder = str(file_system["main"]["dir"])
-    run_is_success = var.run()
+    test_workfolder = file_system["main"]["dir"]
+    test_instructions = None
+    var = ConvertFiles(test_workfolder, test_instructions)
 
-    # Validate run method was a success
-    assert run_is_success, "This should run without any problems"
+    assert var.run(), "This should return True"
 
-    # Validate old file is deleted
-    assert not file_system["main"]["file3"].exists(), "Main file 3 did not get deleted"
+    main_file1 = Path(file_system["main"]["file1"].as_posix() + ".log")
+    main_file2 = Path(file_system["main"]["file2"].as_posix() + ".log")
+    main_file3 = Path(file_system["main"]["file3"].as_posix() + ".log")
 
-    # Validate files is not deleted
-    assert file_system["main"]["file1"].exists(), "Main file 1 did get deleted"
-    assert file_system["main"]["file2"].exists(), "Main file 2 did get deleted"
+    assert main_file1.exists(), "This should exists"
+    assert main_file2.exists(), "This should exists"
+    assert main_file3.exists(), "This should exists"
 
-    # Validate new file exists
-    main_file3 = file_system["main"]["file3"].parent / (file_system["main"]["file3"].name + ".log")
-    assert main_file3.exists(), "Main file 3 did not get converted"
-
-def test_run_exclude_extension(file_system):
-    """
-    Testing exclude extension are working
-    """
-    instructions = {
-        "Directory":"*",
-        "Recursive": "false",
-        "NewFileExtension": ".log",
-        "ExcludeExtensions":".log"
-        }
-    var = ConvertFiles()
-    var.instructions = instructions
-    var.workfolder = str(file_system["main"]["dir"])
-    run_is_success = var.run()
-
-    # Validate run method was a success
-    assert run_is_success, "This should run without any problems"
-
-    # Validate old file is deleted
-    assert not file_system["main"]["file1"].exists(), "Main file 1 did not get deleted"
-    assert not file_system["main"]["file3"].exists(), "Main file 3 did not get deleted"
-
-    # Validate file is not deleted
-    assert file_system["main"]["file2"].exists(), "Main file 2 did get deleted"
-
-    # Validate new file exists
-    main_file3 = file_system["main"]["file3"].parent / (file_system["main"]["file3"].name + ".log")
-    assert main_file3.exists(), "Main file 3 did not get converted"
-
-    main_file1 = file_system["main"]["file1"].parent / (file_system["main"]["file1"].name + ".log")
-    assert main_file1.exists(), "Main file 1 did not get converted"
 
 def test_run_relative_dir(file_system):
     """
-    Testing relative path is working
     """
-    instructions = {
-        "Directory":"sub",
-        "Recursive": "false",
-        "NewFileExtension": ".log"
-        }
-    var = ConvertFiles()
-    var.instructions = instructions
-    var.workfolder = str(file_system["main"]["dir"])
-    run_is_success = var.run()
+    test_workfolder = file_system["main"]["dir"]
+    test_instructions = {
+        "Directory" : "sub",
+        "Recursive" : "False",
+        "NewExtension" : ".log"
+    }
+    var = ConvertFiles(test_workfolder, test_instructions)
+    assert var.run(), "This should return True"
 
-    # Validate run method was a success
-    assert run_is_success, "This should run without any problems"
+    sub_file1 = Path(file_system["sub"]["file1"].as_posix() + ".log")
+    assert sub_file1.exists(), "This should exists"
 
-    # Validate main files is not deleted
-    assert file_system["main"]["file1"].exists(), "Main file 1 did get deleted"
-    assert file_system["main"]["file2"].exists(), "Main file 2 did get deleted"
-    assert file_system["main"]["file3"].exists(), "Main file 3 did get deleted"
+def test_run_exclude_extension(file_system):
+    """
+    """
+    test_workfolder = file_system["main"]["dir"]
+    test_instructions = {
+        "Directory" : "*",
+        "Recursive" : "False",
+        "NewExtension" : ".txt",
+        "ExcludeExtensions" : ".log"
+    }
+    var = ConvertFiles(test_workfolder, test_instructions)
+    assert var.run(), "This should return True"
+    assert file_system["main"]["file2"].exists(), "This should exists"
 
-    # Validate sub files are deleted
-    assert not file_system["sub"]["file1"].exists(), "Sub file 1 did not get deleted"
-    assert not file_system["sub"]["file2"].exists(), "Sub file 2 did not get deleted"
-    assert not file_system["sub"]["file3"].exists(), "Sub file 3 did not get deleted"
-
-    # Validate sub files are converted
-    sub_file1 = file_system["sub"]["file1"].parent / (file_system["sub"]["file1"].name + ".log")
-    assert sub_file1.exists(), "Sub file 1 did not get converted"
-
-    sub_file2 = file_system["sub"]["file2"].parent / (file_system["sub"]["file2"].name + ".log")
-    assert sub_file2.exists(), "Sub file 2 did not get converted"
-
-    sub_file3 = file_system["sub"]["file3"].parent / (file_system["sub"]["file3"].name + ".log")
-    assert sub_file3.exists(), "Sub file 3 did not get converted"
+def test_run_exclude_files(file_system):
+    """
+    """
+    test_workfolder = file_system["main"]["dir"]
+    test_instructions = {
+        "Directory" : "*",
+        "Recursive" : "False",
+        "NewExtension" : ".txt",
+        "ExcludeFiles" : "file2.log"
+    }
+    var = ConvertFiles(test_workfolder, test_instructions)
+    assert var.run(), "This should return True"
+    assert file_system["main"]["file2"].exists(), "This should exists"
