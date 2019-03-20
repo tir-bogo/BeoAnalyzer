@@ -64,6 +64,7 @@ def file_system(tmp_path):
 
 def test_directory_instruction():
     """
+    Testing direction_instruction
     """
     instructions = {"Directory": "sub"}
     var = MockOperationBase("test", instructions)
@@ -71,12 +72,14 @@ def test_directory_instruction():
 
 def test_directory_instruction_is_none():
     """
+    Testing direction_instruction default value
     """
     var = MockOperationBase("test", None)
     assert var.directory_instruction == "*"
 
 def test_recursive_instruction():
     """
+    Testing recursive_instruction
     """
     instructions = {"Recursive": "True"}
     var = MockOperationBase("test", instructions)
@@ -84,12 +87,14 @@ def test_recursive_instruction():
 
 def test_recursive_instruction_is_none():
     """
+    Testing recursive_instruction default value
     """
     var = MockOperationBase("test", None)
     assert not var.recursive_instruction
 
 def test_exclude_files_instruction():
     """
+    Testing exclude_files_instruction
     """
     instructions = {"ExcludeFiles": "test.html|message.0"}
     var = MockOperationBase("test", instructions)
@@ -97,12 +102,14 @@ def test_exclude_files_instruction():
 
 def test_exclude_files_instruction_is_none():
     """
+    Testing exclude_files_instruction default value
     """
     var = MockOperationBase("test", None)
     assert var.exclude_files_instruction == []
 
 def test_exclude_extensions_instruction():
     """
+    Testing exclude_extensions_instruction
     """
     instructions = {"ExcludeExtensions": ".html|.log"}
     var = MockOperationBase("test", instructions)
@@ -110,12 +117,14 @@ def test_exclude_extensions_instruction():
 
 def test_exclude_extensions_instruction_is_none():
     """
+    Testing exclude_extensions_instruction default value
     """
     var = MockOperationBase("test", None)
     assert var.exclude_extensions_instruction == []
 
 def test_new_file_extension_instruction():
     """
+    Testing new_file_extensions_instruction
     """
     instructions = {"NewFileExtension": ".html"}
     var = MockOperationBase("test", instructions)
@@ -123,30 +132,35 @@ def test_new_file_extension_instruction():
 
 def test_new_file_extension_instruction_is_none():
     """
+    Testing new_file_extensions_instruction default value
     """
     var = MockOperationBase("test", None)
     assert var.new_file_extension_instruction == ".log"
 
 def test_make_directory_path():
     """
+    Testing testing it can combine workfolder and relative path
     """
     var = MockOperationBase("c:", None)
     assert var.make_directory_path("windows") == "c:/windows"
 
 def test_make_directory_path_arg_is_none():
     """
+    Test it returns workfolder
     """
     var = MockOperationBase("c:", None)
     assert var.make_directory_path(None) == "c:"
 
 def test_make_directory_path_start():
     """
+    Test it returns workfolder
     """
     var = MockOperationBase("c:", None)
     assert var.make_directory_path("*") == "c:"
 
 def test_get_files(file_system):
     """
+    Test can get files
     """
     files = MockOperationBase.get_files(file_system["main"]["dir"], False)
     assert len(files) == 1, "Not expected count"
@@ -154,6 +168,7 @@ def test_get_files(file_system):
 
 def test_get_files_recursive(file_system):
     """
+    Test can get files recursive
     """
     files = MockOperationBase.get_files(file_system["main"]["dir"], True)
     assert len(files) == 3, "Not expected count"
@@ -163,18 +178,21 @@ def test_get_files_recursive(file_system):
 
 def test_get_files_arg_none():
     """
+    Test it return empty list if arg is none
     """
     files = MockOperationBase.get_files(None, True)
     assert files == [], "There should not be found any file"
 
 def test_get_files_dir_do_not_exists():
     """
+    Test it returns empty list if dir do not exists
     """
     files = MockOperationBase.get_files("Invalid/path", True)
     assert files == [], "There should not be found any file"
 
 def test_get_directories(file_system):
     """
+    Test can get sub directories from directory
     """
     directories = MockOperationBase.get_directories(file_system["main"]["dir"], False)
     assert len(directories) == 1, "Should find 1 sub directory"
@@ -182,6 +200,7 @@ def test_get_directories(file_system):
 
 def test_get_directories_recursive(file_system):
     """
+    Test can get sub directories from directory recursive
     """
     directories = MockOperationBase.get_directories(file_system["main"]["dir"], True)
     assert len(directories) == 2, "Should find 2 sub directory"
@@ -190,12 +209,14 @@ def test_get_directories_recursive(file_system):
 
 def test_get_directories_arg_none():
     """
+    Test returns empty list if arg is none
     """
     directories = MockOperationBase.get_directories(None, False)
     assert directories == [], "Should find 0 sub directories"
 
 def test_get_directories_dir_do_not_exists():
     """
+    Test returns empty list if directory do not exists
     """
     directories = MockOperationBase.get_directories("Invalid/path", False)
     assert directories == [], "Should find 0 sub directories"

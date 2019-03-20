@@ -31,6 +31,7 @@ def file_system(tmp_path):
 
 def test_pretty_print_file(file_system):
     """
+    Testing pretty printing file is working as expected
     """
     target = file_system["main"]["file1"].as_posix()
     result = PrettyJson.pretty_print_file(target)
@@ -44,9 +45,9 @@ def test_pretty_print_file(file_system):
         for counter, line in enumerate(filecontent):
             assert expected[counter] == line.strip(), "Not expected result"
 
-
 def test_pretty_print_file_arg_none():
     """
+    Testing pretty_print_file returns false, when arg is none
     """
     target = None
     result = PrettyJson.pretty_print_file(target)
@@ -55,6 +56,7 @@ def test_pretty_print_file_arg_none():
 
 def test_pretty_print_file_invalid_path():
     """
+    Testing pretty_print_file returns false, when path is invalid
     """
     target = "Invalid/path/test.txt"
     result = PrettyJson.pretty_print_file(target)
@@ -63,12 +65,14 @@ def test_pretty_print_file_invalid_path():
 
 def test_run_workfolder_none():
     """
+    Testing run return false when workfolder is none
     """
     var = PrettyJson(None, None)
     assert not var.run(), "This should not be able to run"
 
 def test_run_invalid_workfolder():
     """
+    Testing run return false when workfolder is invalid
     """
     target = "Invalid/path/test.txt"
     var = PrettyJson(target, None)
@@ -76,6 +80,7 @@ def test_run_invalid_workfolder():
 
 def test_run(file_system):
     """
+    Testing run returns true, when it was a success
     """
     target = file_system["main"]["dir"].as_posix()
     var = PrettyJson(target, None)

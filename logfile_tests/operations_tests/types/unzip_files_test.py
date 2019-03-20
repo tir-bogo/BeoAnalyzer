@@ -9,7 +9,6 @@ from logfile.operations.types.unzip_files import UnzipFiles
 
 # pylint: disable=redefined-outer-name
 
-
 @pytest.fixture
 def file_system(tmp_path):
     """
@@ -88,12 +87,12 @@ def file_system(tmp_path):
             "sub":{
                 "file": sub_dir / sub_file1.stem / main_test_file.name
             }
-
         }
     }
 
 def test_extract_tar(file_system):
     """
+    Testing file can be extracted
     """
     target = file_system["main"]["file1"].as_posix()
     result = UnzipFiles.extract_tar(target)
@@ -104,30 +103,31 @@ def test_extract_tar(file_system):
 
 def test_extract_tar_corrupted_file(file_system):
     """
+    Test tar_extract returns None if file is corrupted
     """
     target = file_system["main"]["corrupted_gz"].as_posix()
     result = UnzipFiles.extract_tar(target)
-
     assert not result, "Not expected return"
 
 def test_extract_tar_arg_none():
     """
+    Test tar_extract returns None if arg is none
     """
     target = None
     result = UnzipFiles.extract_tar(target)
-
     assert not result, "Not expected return"
 
 def test_extract_tar_invalid_path():
     """
+    Test tar_extract returns None if filepath is invalid
     """
     target = "invalid/path/test.tar"
     result = UnzipFiles.extract_tar(target)
-
     assert not result, "Not expected return"
 
 def test_extract_gz(file_system):
     """
+    Testing can extract gz file
     """
     target = file_system["main"]["file2"].as_posix()
     result = UnzipFiles.extract_gz(target)
@@ -135,30 +135,28 @@ def test_extract_gz(file_system):
     assert result, "Not expected return"
     assert file_system["results"]["main"]["file2"].exists()
 
-
 def test_extract_gz_corrupted_file(file_system):
     """
+    Testing returns false if gz is corrupted
     """
     target = file_system["main"]["corrupted_gz"].as_posix()
     result = UnzipFiles.extract_gz(target)
-
     assert not result, "Not expected return"
-
 
 def test_extract_gz_arg_none():
     """
+    Testing returns false if filepath is none
     """
     target = None
     result = UnzipFiles.extract_gz(target)
-
     assert not result, "Not expected return"
 
 def test_extract_gz_invalid_path():
     """
+    Testing returns false if filepath is invalid
     """
     target = "Invalid/path/test.txt.gz"
     result = UnzipFiles.extract_gz(target)
-
     assert not result, "Not expected return"
 
 def test_extract_arg_none():
@@ -175,6 +173,7 @@ def test_extract_invalid_path():
 
 def test_extract_recursive(file_system):
     """
+    Test extract can walk tree and extract
     """
     target = file_system["main"]["file1"]
     UnzipFiles.extract(target, True)
@@ -182,6 +181,7 @@ def test_extract_recursive(file_system):
 
 def test_extract_not_recursive(file_system):
     """
+    Testing extract can run not recursive
     """
     target = file_system["main"]["file1"]
     UnzipFiles.extract(target, False)
@@ -189,6 +189,7 @@ def test_extract_not_recursive(file_system):
 
 def test_run_workfolder_none():
     """
+    Testing run returns false if workfolder is none
     """
     instructions = {
         "Directory": "*",
@@ -197,9 +198,22 @@ def test_run_workfolder_none():
     var = UnzipFiles(None, instructions)
     assert not var.run(), "Not expected return"
 
+def test_run_workfolder_invalid():
+    """
+    Testing run returns false if workfolder is none
+    """
+    instructions = {
+        "Directory": "*",
+        "Recursive": "False"
+    }
+    var = UnzipFiles("invalid/path", instructions)
+    assert not var.run(), "Not expected return"
+
 def test_run_instructions_none(file_system):
     """
+    Testing use of default values if instructions is none
     """
     workfolder = file_system["main"]["dir"]
     var = UnzipFiles(workfolder, None)
     assert var.run(), "Not expected return"
+    

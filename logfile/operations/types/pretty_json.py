@@ -53,5 +53,9 @@ class PrettyJson(OperationBase):
         if files != []:
             for filepath in files:
                 PrettyJson.pretty_print_file(filepath)
+
+            self._log_run_success()
             return True
+
+        self._log_run_failed("No files affected")
         return False

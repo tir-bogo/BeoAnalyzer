@@ -32,10 +32,13 @@ class ConvertFiles(OperationBase):
         Args:
             filepath(str): Full filepath to file
             new_extension(str):  New extension to file example: ('.txt')
+
+        Returns:
+            bool: Convert is a success
         """
         if filepath and new_extension:
             path = Path(filepath)
-            
+
             if path.exists():
                 try:
                     new_path = Path(path.parents[0], path.name + new_extension)
@@ -69,18 +72,25 @@ class ConvertFiles(OperationBase):
         return False
 
     @staticmethod
-    def sort_files(files: list, items: list):
+    def sort_files(files: list, filters: list):
         """
+        Discard files where filters match file
+
+        Args:
+            files(list): Filepaths
+            filters(list): Filters for files to discard
+
+        Returns:
+            list: Remainding files
         """
         result = []
         if files:
             for filepath in files:
-                if ConvertFiles.list_item_in_string(items, filepath):
+                if ConvertFiles.list_item_in_string(filters, filepath):
                     logging.debug(f"Skipping file to convert {filepath}")
                 else:
                     result.append(filepath)
         return result
-
 
     def run(self) -> bool:
         """
@@ -104,5 +114,9 @@ class ConvertFiles(OperationBase):
         if files != []:
             for filepath in files:
                 self.convert_file(filepath, new_extension)
+
+            self._log_run_success()
             return True
+
+        self._log_run_failed("No files affected")
         return False

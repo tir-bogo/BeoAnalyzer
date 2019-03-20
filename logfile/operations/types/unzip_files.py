@@ -68,6 +68,9 @@ class UnzipFiles(OperationBase):
 
         Args:
             filepath(str): Filepath to gz file
+
+        Returns:
+            bool: Gz extract success
         """
         if filepath and Path(filepath).exists():
             filepath = Path(filepath)
@@ -126,5 +129,9 @@ class UnzipFiles(OperationBase):
         if files_in_directory != []:
             for filepath in files_in_directory:
                 UnzipFiles.extract(filepath, recursive)
+
+            self._log_run_success()
             return True
+
+        self._log_run_failed("No files affected")
         return False
