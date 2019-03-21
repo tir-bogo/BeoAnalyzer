@@ -2,165 +2,190 @@
 Module contains a base class for file operations
 """
 import abc
+import logging
 from pathlib import Path
+
+# pylint: disable=W1203
 
 class OperationBase(metaclass=abc.ABCMeta):
     """
     Base class for sharing methods across file operations
     """
-
-    def __init__(self):
-        self._workfolder = None
-        self._instructions = None
-
-    @property
-    def workfolder(self) -> str:
-        """
-        Get workfolder
-
-        Returns:
-            str: workfolder
-        """
-        return self._workfolder
-
-    @workfolder.setter
-    def workfolder(self, workfolder: str) -> None:
-        """
-        Set workfolder
-
-        Args:
-            workfolder (str): New workfolder path to operate from
-        """
+    def __init__(self, workfolder: str, instructions: dict):
+        logging.info(f"Running FileOperation'{self.__class__.__name__}'")
         self._workfolder = workfolder
-
-    @property
-    def instructions(self) -> dict:
-        """
-        Get instructions
-
-        Returns:
-            dict: instructions for file operation
-        """
-        return self._instructions
-
-    @instructions.setter
-    def instructions(self, instructions: dict) -> None:
-        """
-        Set instructions
-
-        Args:
-            instruction(dict): Instructions for file operation
-        """
         self._instructions = instructions
+        if not self._instructions:
+            logging.warning("Instructions is set to None, setting it to empty dict")
+            self._instructions = {}
+
+    @staticmethod
+    def _log_instruction(instrution_key, instruction_value) -> None:
+        """
+        Logs instrution
+        """
+        logging.info(f"Instruction '{instrution_key}' = '{instruction_value}'")
+
+    def _log_run_success(self) -> None:
+        """
+        Logs run is a success
+        """
+        logging.info(f"'{self.__class__.__name__}'Execution done successfully")
+
+    def _log_run_failed(self, message="") -> None:
+        """
+        """
+        logging.warning(f"'{self.__class__.__name__}'Execution Failed. {message}")
 
     @property
-    def _exclude_files_instruction(self) -> list:
-        """
-        Get file names to exclude from instructions
-
-        Returns:
-            List<string>: Values to exclude
-
-        Raises:
-            TypeError: self.instructions is None
-        """
-        exclude_files_key = "ExcludeFiles"
-        if exclude_files_key in self.instructions:
-            value = self.instructions[exclude_files_key]
-            return value.split('|')
-        return []
-
-    @property
-    def _exclude_extensions_instruction(self) -> list:
-        """
-        Get file extensions to exclude from instructions
-
-        Returns:
-            List<string>: Values to exclude
-
-        Raises:
-            TypeError: self.instructions is None
-        """
-        exclude_extensions_key = "ExcludeExtensions"
-        if exclude_extensions_key in self.instructions:
-            value = self.instructions[exclude_extensions_key]
-            return value.split('|')
-        return []
-
-    @property
-    def _recursive_instruction(self) -> bool:
-        """
-        Get recursive instruction from instructions
-
-        Returns:
-            bool: Recursive behavior enabled
-
-        Raises:
-            TypeError: self.instructions is None
-        """
-        recursive_key = "Recursive"
-        if recursive_key in self.instructions:
-            val = self.instructions[recursive_key].lower()
-            return val == "true"
-        return False
-
-    @property
-    def _directory_instruction(self) -> str:
+    def directory_instruction(self) -> str:
         """
         Get directory from instructions
 
         Returns:
             str: Directory
 
-        Raises:
-            TypeError: self.instructions is None
+        Default value: '*'
         """
         directory_key = "Directory"
-        if directory_key in self.instructions:
-            return self.instructions[directory_key]
-        return "*"
+        val = "*"
+        if directory_key in self._instructions:
+            val = self._instructions[directory_key]
+
+        self._log_instruction(directory_key, val)
+        return val
 
     @property
-    def _new_file_extension_instruction(self) -> str:
+    def recursive_instruction(self) -> bool:
+        """
+        Get recursive instruction from instructions
+
+        Returns:
+            bool: Recursive behavior enabled
+
+        Default value: False
+        """
+        recursive_key = "Recursive"
+        val = False
+        if recursive_key in self._instructions:
+            val = self._instructions[recursive_key].lower()
+            val = (val == "true")
+        self._log_instruction(recursive_key, val)
+        return val
+
+    @property
+    def exclude_files_instruction(self) -> list:
+        """
+        Get file names to exclude from instructions
+
+        Returns:
+            List<string>: Values to exclude
+
+        Default value: []
+        """
+        exclude_files_key = "ExcludeFiles"
+        val = []
+        if exclude_files_key in self._instructions:
+            value = self._instructions[exclude_files_key]
+            val = value.split('|')
+        self._log_instruction(exclude_files_key, val)
+        return val
+
+    @property
+    def exclude_extensions_instruction(self) -> list:
+        """
+        Get file extensions to exclude from instructions
+
+        Returns:
+            List<string>: Values to exclude
+
+        Default value: []
+        """
+        exclude_extensions_key = "ExcludeExtensions"
+        val = []
+        if exclude_extensions_key in self._instructions:
+            value = self._instructions[exclude_extensions_key]
+            val = value.split('|')
+        self._log_instruction(exclude_extensions_key, val)
+        return val
+
+    @property
+    def new_file_extension_instruction(self) -> str:
         """
         Get new extension from instructions
 
         Returns:
             str: New extension
 
-        Raises:
-            TypeError: self.instructions is None
+        Default value: '.log'
         """
         new_file_extension_key = "NewFileExtension"
-        if new_file_extension_key in self.instructions:
-            return self.instructions[new_file_extension_key]
-        return ""
+        val = ".log"
+        if new_file_extension_key in self._instructions:
+            val = self._instructions[new_file_extension_key]
+        self._log_instruction(new_file_extension_key, val)
+        return val
 
-    def _get_files(self, relative_filepath: str, recursive: bool) -> list:
+    def make_directory_path(self, relative_path: str) -> str:
         """
-        Get files from directory
+        Combines workfolder with relative path
 
         Args:
-            relative_filepath(str): Relative file path to workfolder or * for current
-            recursive(bool): Enable recursive behavior
+            relative_path(str): Relative path to add
 
         Returns:
-            List<string>: Filepaths for files found
+            str: Full directory path
         """
-        path = None
-        if relative_filepath == "*":
-            path = Path(self.workfolder)
+        val = ""
+        if self._workfolder:
+            result = Path(self._workfolder)
+            if relative_path and relative_path != "*":
+                val = (result / relative_path).as_posix()
+            else:
+                val = result.as_posix()
         else:
-            path = Path(self.workfolder, relative_filepath)
+            logging.error(f"Workfolder is set to '{self._workfolder}'")
+        return val
 
-        result = []
-        if recursive:
-            result = list(x for x in path.glob("**/*.*") if x.is_file())
+    @staticmethod
+    def get_files(directory: str, recursive: bool) -> list:
+        """
+        Getting files from directory
 
-        else:
-            result = list(x for x in path.iterdir() if x.is_file())
+        Args:
+            directory(str): Directory path
+            recursive(bool): Run recursive through sub directories
 
-        return [str(x) for x in result]
+        Returns:
+            list: Filepaths
+        """
+        if directory:
+            path = Path(directory)
+            if path.exists():
+                if recursive:
+                    return list(str(x) for x in path.glob("**/*.*") if x.is_file())
+                return list(str(x) for x in path.iterdir() if x.is_file())
+        return []
+
+    @staticmethod
+    def get_directories(directory: str, recursive: bool) -> bool:
+        """
+         Getting sub directories from directory
+
+        Args:
+            directory(str): Directory path
+            recursive(bool): Run recursive through sub directories
+
+        Returns:
+            list: Direcory paths
+        """
+        if directory:
+            path = Path(directory)
+            if path.exists():
+                if recursive:
+                    return [str(x) for x in path.glob("*/**") if x.is_dir()]
+                return [str(x) for x in path.iterdir() if x.is_dir()]
+        return []
 
     @abc.abstractmethod
     def run(self) -> bool:
