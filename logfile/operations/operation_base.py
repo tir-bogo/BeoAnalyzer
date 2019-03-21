@@ -126,6 +126,74 @@ class OperationBase(metaclass=abc.ABCMeta):
         self._log_instruction(new_file_extension_key, val)
         return val
 
+    @property
+    def output_name_instruction(self):
+        """
+        Get output name from instructions
+
+        Returns:
+            str: Output name
+
+        Default value: ''
+        """
+        output_name_key = "OutputName"
+        val = ""
+        if output_name_key in self._instructions:
+            val = self._instructions[output_name_key]
+        self._log_instruction(output_name_key, val)
+        return val
+
+    @property
+    def regex_expression_instruction(self):
+        """
+        Get regex expression from instructions
+
+        Returns:
+            str: Regex expression
+
+        Default value: ''
+        """
+        regex_key = "RegexExpression"
+        val = ""
+        if regex_key in self._instructions:
+            val = self._instructions[regex_key]
+        self._log_instruction(regex_key, val)
+        return val
+
+    @property
+    def delete_instruction(self):
+        """
+        Get delete instruction from instructions
+
+        Returns:
+            bool: Delete instruction
+
+        Default value: False
+        """
+        delete_key = "Delete"
+        val = False
+        if delete_key in self._instructions:
+            val = self._instructions[delete_key].lower() == "true"
+        self._log_instruction(delete_key, val)
+        return val
+
+    @property
+    def sort_type_instruction(self):
+        """
+        Get SortType instruction from instructions
+
+        Returns:
+            str: SortType
+
+        Default value: 'None'
+        """
+        key = "SortType"
+        val = "None"
+        if key in self._instructions:
+            val = self._instructions[key]
+        self._log_instruction(key, val)
+        return val
+
     def make_directory_path(self, relative_path: str) -> str:
         """
         Combines workfolder with relative path

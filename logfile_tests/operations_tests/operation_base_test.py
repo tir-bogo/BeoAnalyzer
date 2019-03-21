@@ -220,3 +220,76 @@ def test_get_directories_dir_do_not_exists():
     """
     directories = MockOperationBase.get_directories("Invalid/path", False)
     assert directories == [], "Should find 0 sub directories"
+
+def test_output_name_instruction():
+    """
+    Testing get output name
+    """
+    test_instructions = {
+        "OutputName":"file.txt"
+    }
+
+    var = MockOperationBase(None, test_instructions)
+    assert var.output_name_instruction == "file.txt", "Not expected value"
+
+def test_output_name_instruction_is_none():
+    """
+    Testing get default output name
+    """
+    var = MockOperationBase(None, None)
+    assert var.output_name_instruction == "", "Not expected value"
+
+def test_regex_expression_instruction():
+    """
+    Testing get output name
+    """
+    test_instructions = {
+        "RegexExpression": "^[.*]"
+    }
+
+    var = MockOperationBase(None, test_instructions)
+    assert var.regex_expression_instruction == "^[.*]", "Not expected value"
+
+def test_regex_expression_instruction_is_none():
+    """
+    Testing get default output name
+    """
+    var = MockOperationBase(None, None)
+    assert var.regex_expression_instruction == "", "Not expected value"
+
+def test_delete_instruction():
+    """
+    Testing get delete instruction
+    """
+    test_instructions = {
+        "Delete": "True"
+    }
+
+    var = MockOperationBase(None, test_instructions)
+    assert var.delete_instruction, "Not expected value"
+
+def test_delete_instruction_is_none():
+    """
+    Testing get delete instruction
+    """
+    var = MockOperationBase(None, None)
+    assert not var.delete_instruction, "Not expected value"
+
+def test_sort_type_instruction():
+    """
+    Testing get SortType
+    """
+    test_instructions = {
+        "SortType": "High-Low"
+    }
+
+    var = MockOperationBase(None, test_instructions)
+    assert var.sort_type_instruction == "High-Low", "Not expected value"
+
+def test_sort_type_instruction_is_none():
+    """
+    Testing get default SortType
+    """
+    var = MockOperationBase(None, None)
+    assert var.sort_type_instruction == "None", "Not expected value"
+    
