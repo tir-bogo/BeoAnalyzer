@@ -19,7 +19,7 @@ class MergeFiles(OperationBase):
         result = []
         if files and regex:
             for file_path in files:
-                match = regex.match(file_path)
+                match = regex.search(file_path)
                 if match:
                     result.append(file_path)
         return result
@@ -30,7 +30,7 @@ class MergeFiles(OperationBase):
         """
         if files and regex:
             def regex_sort(line):
-                match = regex.match(line)
+                match = regex.search(line)
                 if match:
                     return match.groups()[0]
                 return 0
@@ -79,38 +79,39 @@ class MergeFiles(OperationBase):
 
         if regex and \
            output_name and \
+           directory_path and \
            Path(directory_path).exists():
             
             regex = re.compile(regex)
-            directories = self.get_directories(directory_path, recursive)
+
+            directories = None
+            if recursive:
+                directories = self.get_directories(directory_path, recursive)
+                directories.append(directory_path)
+            else:
+                directories = [directory_path]
             for path in directories:
                 files = self.get_files(path, False)
 
-                # kan blive til metode
-                files_to_merge = []
-                for file_path in files:
-                    match = regex.match(file_path)
-                    if match:
-                        files_to_merge.append(file_path)
+                files_to_merge = self.match_files_with_regex(files, regex)
                 
-                # Kan blive til metode
-                if len(files_to_merge) < 1 and sort_type != "None":
-
+                if files_to_merge:
                     if sort_type == "LowHigh":
-                        files_to_merge.sort(key=lambda x: int(regex.match(x).groups()[0]))
+                        files_to_merge = self.sort_files(files_to_merge, regex)
+
                     elif sort_type == "HighLow":
-                        files_to_merge.sort(key=lambda x: int(regex.match(x).groups()[0]))
+                        files_to_merge = self.sort_files(files_to_merge, regex)
                         files_to_merge.reverse()
-                
-                # Merge file ny metode ?
-                new_file_path = Path(path) / output_name
-                with open(new_file_path, 'w') as outfile:
-                    input_lines = fileinput.input(files_to_merge)
-                    outfile.writelines(input_lines)
-                
-                if delete:
-                    # metode
-                    for fpath in files_to_merge:
-                        Path.unlink(fpath)
-                
+
+                    new_file_path = (Path(path) / output_name).as_posix()
+                    self.merge_files(new_file_path, files_to_merge)
+
+                    if delete:
+                        self.delete_files(files_to_merge)
+            
+            self._log_run_success()
+            return True
+        
+        self._log_run_failed()
+        return False
                 

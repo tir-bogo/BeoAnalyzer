@@ -16,7 +16,7 @@ def file_system(tmp_path):
     main_file2 = main_dir / "file2.txt"
     main_file3 = main_dir / "file3.txt"
 
-    sub_dir = main_dir / "main"
+    sub_dir = main_dir / "sub"
     sub_file1 = sub_dir / "file1.txt"
     sub_file2 = sub_dir / "file2.txt"
     sub_file3 = sub_dir / "file3.txt"
@@ -131,10 +131,13 @@ def test_merge_files(file_system):
     test_files.append(file_system["main"]["file2"].as_posix())
     test_files.append(file_system["main"]["file3"].as_posix())
 
-    output_file = (file_system["main"]["dir"] / "output.txt").as_posix()
+    output_file = (file_system["main"]["dir"] / "output.txt")
 
     ran_success = MergeFiles.merge_files(output_file, test_files)
     assert ran_success, "Expected to return True"
+    assert output_file.exists()
+
+    output_file = output_file.as_posix()
 
     result = []
     with open(output_file, 'r') as file_read:
@@ -209,7 +212,147 @@ def test_delete_files_invalid_path():
     ran_success = MergeFiles.delete_files(None)
     assert not ran_success, "Expected False"
 
-def test_run_not_recursive():
+def test_run_not_recursive(file_system):
     """
     """
-    assert False, "Not implemented"
+    instructions = {
+        "Directory": "*",
+        "Recursive": "False",
+        "RegexExpression": "file(\\d)",
+        "OutputName": "out.txt"
+    }
+    workfolder = file_system["main"]["dir"].as_posix()
+    var = MergeFiles(workfolder, instructions)
+    run_success = var.run()
+
+    assert run_success, "Expected to run successfully"
+    assert (file_system["main"]["dir"] / "out.txt").exists()
+
+def test_run_recursive(file_system):
+    """
+    """
+    instructions = {
+        "Directory": "*",
+        "Recursive": "True",
+        "RegexExpression": "file(\d)",
+        "OutputName": "out.txt"
+    }
+    workfolder = file_system["main"]["dir"].as_posix()
+    var = MergeFiles(workfolder, instructions)
+    run_success = var.run()
+
+    assert run_success, "Expected to run successfully"
+    assert (file_system["main"]["dir"] / "out.txt").exists()
+    assert (file_system["sub"]["dir"] / "out.txt").exists()
+
+def test_run_delete(file_system):
+    """
+    """
+    instructions = {
+        "Directory": "*",
+        "Recursive": "False",
+        "RegexExpression": "file(\d)",
+        "OutputName": "out.txt",
+        "Delete": "True"
+    }
+    workfolder = file_system["main"]["dir"].as_posix()
+    var = MergeFiles(workfolder, instructions)
+    run_success = var.run()
+
+    assert run_success, "Expected to run successfully"
+    assert (file_system["main"]["dir"] / "out.txt").exists()
+    assert not file_system["main"]["file1"].exists()
+    assert not file_system["main"]["file2"].exists()
+    assert not file_system["main"]["file3"].exists()
+
+def test_run_sub_directory(file_system):
+    """
+    """
+    instructions = {
+        "Directory": "sub",
+        "Recursive": "False",
+        "RegexExpression": "file(\d)",
+        "OutputName": "out.txt"
+    }
+    workfolder = file_system["main"]["dir"].as_posix()
+    var = MergeFiles(workfolder, instructions)
+    run_success = var.run()
+
+    assert run_success, "Expected to run successfully"
+    assert (file_system["sub"]["dir"] / "out.txt").exists()
+
+def test_run_sort_low_high(file_system):
+    """
+    """
+    instructions = {
+        "Directory": "*",
+        "Recursive": "False",
+        "RegexExpression": "file(\d)",
+        "OutputName": "out.txt",
+        "SortType": "LowHigh"
+    }
+    workfolder = file_system["main"]["dir"].as_posix()
+    var = MergeFiles(workfolder, instructions)
+    run_success = var.run()
+
+    assert run_success, "Expected to run successfully"
+    output_file = file_system["main"]["dir"] / "out.txt"
+    assert output_file.exists()
+
+    output_file = output_file.as_posix()
+    result = []
+    with open(output_file, 'r') as file_read:
+        for line in file_read:
+            result.append(line)
+
+    expected_result = ["1\n", "2\n", "3\n"]
+    assert result == expected_result
+
+def test_run_sort_high_low(file_system):
+    """
+    """
+    instructions = {
+        "Directory": "*",
+        "Recursive": "False",
+        "RegexExpression": "file(\d)",
+        "OutputName": "out.txt",
+        "SortType": "HighLow"
+    }
+    workfolder = file_system["main"]["dir"].as_posix()
+    var = MergeFiles(workfolder, instructions)
+    run_success = var.run()
+
+    assert run_success, "Expected to run successfully"
+    output_file = file_system["main"]["dir"] / "out.txt"
+    assert output_file.exists()
+
+    output_file = output_file.as_posix()
+    result = []
+    with open(output_file, 'r') as file_read:
+        for line in file_read:
+            result.append(line)
+
+    expected_result = ["3\n", "2\n", "1\n"]
+    assert result == expected_result
+
+def test_run_instructions_none(file_system):
+    """
+    Testing run fails if necessary instructions is not given
+    """
+    workfolder = file_system["main"]["dir"].as_posix()
+    var = MergeFiles(workfolder, None)
+    run_success = var.run()
+    assert not run_success
+
+def test_run_workfolder_none():
+    """
+    """
+    instructions = {
+        "Directory": "*",
+        "Recursive": "False",
+        "RegexExpression": "file(\d)",
+        "OutputName": "out.txt"
+    }
+    var = MergeFiles(None, instructions)
+    run_success = var.run()
+    assert not run_success
