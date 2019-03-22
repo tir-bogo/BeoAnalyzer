@@ -3,4 +3,4 @@ python:
   "3.6"
 # command to run tests
 script: pytest
-script: .\pylint_check.sh
+script: sh .\pylint_check.sh
