@@ -6,4 +6,4 @@ script: pytest
 
 language: bash
 script:
-  - pylint_check.sh
+  - bash pylint_check.sh
