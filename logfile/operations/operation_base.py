@@ -7,6 +7,7 @@ from pathlib import Path
 
 # pylint: disable=W1203
 
+
 class OperationBase(metaclass=abc.ABCMeta):
     """
     Base class for sharing methods across file operations
@@ -16,7 +17,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         self._workfolder = workfolder
         self._instructions = instructions
         if not self._instructions:
-            logging.warning("Instructions is set to None, setting it to empty dict")
+            logging.warning(r"Instructions is set to None, set it to {}")
             self._instructions = {}
 
     @staticmethod
@@ -35,7 +36,8 @@ class OperationBase(metaclass=abc.ABCMeta):
     def _log_run_failed(self, message="") -> None:
         """
         """
-        logging.warning(f"'{self.__class__.__name__}'Execution Failed. {message}")
+        class_name = self.__class__.__name__
+        logging.warning(f"'{class_name}'Execution Failed. {message}")
 
     @property
     def directory_instruction(self) -> str:
@@ -227,13 +229,16 @@ class OperationBase(metaclass=abc.ABCMeta):
         Returns:
             list: Filepaths
         """
+        files = []
         if directory:
             path = Path(directory)
             if path.exists():
                 if recursive:
-                    return list(str(x) for x in path.glob("**/*.*") if x.is_file())
-                return list(str(x) for x in path.iterdir() if x.is_file())
-        return []
+                    files = list(str(x) for x in path.glob("**/*.*")
+                                 if x.is_file())
+                else:
+                    files = list(str(x) for x in path.iterdir() if x.is_file())
+        return files
 
     @staticmethod
     def get_directories(directory: str, recursive: bool) -> bool:

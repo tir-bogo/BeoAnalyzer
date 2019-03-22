@@ -1,4 +1,4 @@
-find . -name '*.py' -not -path '*/\*' | xargs ls -hat | xargs pylint || pylint-exit $?
+find . -iname "*.py" | xargs pylint -d R0801 || pylint-exit $?
 if [ $? -ne 0 ]; then
   echo "An error occurred while running pylint." >&2
   exit 1

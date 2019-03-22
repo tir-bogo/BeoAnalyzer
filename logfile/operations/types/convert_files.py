@@ -7,6 +7,7 @@ from logfile.operations.operation_base import OperationBase
 
 # pylint: disable=W1203
 
+
 class ConvertFiles(OperationBase):
     """
     This class is responseable for converting files to new file extension
@@ -15,7 +16,8 @@ class ConvertFiles(OperationBase):
         Directory(str):
             Relative path in work folder or * for current work folder
         Recursive(str):
-            False takes current folder, true is recursive through current folder and subs
+            False takes current folder
+            True is recursive through current folder and subs
         NewFileExtension(str):
             The extension files will be converted to
         ExcludeExtensions(str):
@@ -43,10 +45,12 @@ class ConvertFiles(OperationBase):
                 try:
                     new_path = Path(path.parents[0], path.name + new_extension)
                     path.rename(new_path)
-                    logging.debug(f"Converted file '{path}' to '{new_extension}'")
+                    logging.debug(f"""Converted file '{path}'
+                                  to '{new_extension}'""")
                     return True
                 except OSError as exc:
-                    logging.warning(f"Could not convert file '{path}' to '{new_extension}' {exc}")
+                    logging.warning(f"""Could not convert file '{path}'
+                                    to '{new_extension}' {exc}""")
         return False
 
     @staticmethod

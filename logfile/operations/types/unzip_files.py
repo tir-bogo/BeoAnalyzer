@@ -10,6 +10,7 @@ from logfile.operations.operation_base import OperationBase
 
 # pylint: disable=W1203
 
+
 class UnzipFiles(OperationBase):
     """
     This class is responseable for unzipping files
@@ -18,7 +19,8 @@ class UnzipFiles(OperationBase):
         Directory(str):
             Relative path in work folder or * for current work folder
         Recursive(str):
-            False takes current folder, true is recursive through current folder and subs
+            False takes current folder
+            true is recursive through current folder and subs
     """
     @staticmethod
     def extract_tar(filepath: str) -> str:
@@ -90,7 +92,7 @@ class UnzipFiles(OperationBase):
                 return True
 
             except OSError as exc:
-                logging.warning(f"Error while extracting file '{filepath}' {exc}")
+                logging.warning(f"Error extracting file '{filepath}' {exc}")
 
         return False
 
