@@ -2,5 +2,7 @@ language: python
 python:
   "3.6"
 # command to run tests
+before_install:
+  - chmod +x pylint_check.sh
 script: pytest
-script: sh .\pylint_check.sh
+script: .\pylint_check.sh
