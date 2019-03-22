@@ -1,8 +1,5 @@
-# Fail Travis build if Pylint returns fatal (1) | error (2)
-if [ $(($rc & 3)) -ne 0 ]; then
-    echo "Pylint failed"
-    exit 1
-else
-    echo "Pylint passed"
-    exit 0
+find . -name '*.py' -not -path '*/\*' | xargs ls -hat | xargs pylint || pylint-exit $?
+if [ $? -ne 0 ]; then
+  echo "An error occurred while running pylint." >&2
+  exit 1
 fi
