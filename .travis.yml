@@ -1,9 +1,6 @@
 language: python
 python:
   "3.6"
-script: pytest
-
-
-language: bash
-script:
+script: 
+  - pytest
   - bash pylint_check.sh
