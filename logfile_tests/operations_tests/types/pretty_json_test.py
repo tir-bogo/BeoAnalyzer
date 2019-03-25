@@ -7,6 +7,7 @@ from logfile.operations.types.pretty_json import PrettyJson
 
 # pylint: disable=redefined-outer-name
 
+
 @pytest.fixture
 def file_system(tmp_path):
     """
