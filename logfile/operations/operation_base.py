@@ -7,6 +7,7 @@ from pathlib import Path
 
 # pylint: disable=W1203
 
+
 class OperationBase(metaclass=abc.ABCMeta):
     """
     Base class for sharing methods across file operations
@@ -16,7 +17,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         self._workfolder = workfolder
         self._instructions = instructions
         if not self._instructions:
-            logging.warning("Instructions is set to None, setting it to empty dict")
+            logging.warning(r"Instructions is set to None, set it to {}")
             self._instructions = {}
 
     @staticmethod
@@ -35,7 +36,8 @@ class OperationBase(metaclass=abc.ABCMeta):
     def _log_run_failed(self, message="") -> None:
         """
         """
-        logging.warning(f"'{self.__class__.__name__}'Execution Failed. {message}")
+        class_name = self.__class__.__name__
+        logging.warning(f"'{class_name}'Execution Failed. {message}")
 
     @property
     def directory_instruction(self) -> str:
@@ -126,6 +128,74 @@ class OperationBase(metaclass=abc.ABCMeta):
         self._log_instruction(new_file_extension_key, val)
         return val
 
+    @property
+    def output_name_instruction(self):
+        """
+        Get output name from instructions
+
+        Returns:
+            str: Output name
+
+        Default value: ''
+        """
+        output_name_key = "OutputName"
+        val = ""
+        if output_name_key in self._instructions:
+            val = self._instructions[output_name_key]
+        self._log_instruction(output_name_key, val)
+        return val
+
+    @property
+    def regex_expression_instruction(self):
+        """
+        Get regex expression from instructions
+
+        Returns:
+            str: Regex expression
+
+        Default value: ''
+        """
+        regex_key = "RegexExpression"
+        val = ""
+        if regex_key in self._instructions:
+            val = self._instructions[regex_key]
+        self._log_instruction(regex_key, val)
+        return val
+
+    @property
+    def delete_instruction(self):
+        """
+        Get delete instruction from instructions
+
+        Returns:
+            bool: Delete instruction
+
+        Default value: False
+        """
+        delete_key = "Delete"
+        val = False
+        if delete_key in self._instructions:
+            val = self._instructions[delete_key].lower() == "true"
+        self._log_instruction(delete_key, val)
+        return val
+
+    @property
+    def sort_type_instruction(self):
+        """
+        Get SortType instruction from instructions
+
+        Returns:
+            str: SortType
+
+        Default value: 'None'
+        """
+        key = "SortType"
+        val = "None"
+        if key in self._instructions:
+            val = self._instructions[key]
+        self._log_instruction(key, val)
+        return val
+
     def make_directory_path(self, relative_path: str) -> str:
         """
         Combines workfolder with relative path
@@ -159,13 +229,16 @@ class OperationBase(metaclass=abc.ABCMeta):
         Returns:
             list: Filepaths
         """
+        files = []
         if directory:
             path = Path(directory)
             if path.exists():
                 if recursive:
-                    return list(str(x) for x in path.glob("**/*.*") if x.is_file())
-                return list(str(x) for x in path.iterdir() if x.is_file())
-        return []
+                    files = list(str(x) for x in path.glob("**/*.*")
+                                 if x.is_file())
+                else:
+                    files = list(str(x) for x in path.iterdir() if x.is_file())
+        return files
 
     @staticmethod
     def get_directories(directory: str, recursive: bool) -> bool:

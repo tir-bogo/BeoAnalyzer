@@ -7,6 +7,7 @@ from logfile.operations.types.pretty_json import PrettyJson
 
 # pylint: disable=redefined-outer-name
 
+
 @pytest.fixture
 def file_system(tmp_path):
     """
@@ -29,6 +30,7 @@ def file_system(tmp_path):
         }
     }
 
+
 def test_pretty_print_file(file_system):
     """
     Testing pretty printing file is working as expected
@@ -45,6 +47,7 @@ def test_pretty_print_file(file_system):
         for counter, line in enumerate(filecontent):
             assert expected[counter] == line.strip(), "Not expected result"
 
+
 def test_pretty_print_file_arg_none():
     """
     Testing pretty_print_file returns false, when arg is none
@@ -53,6 +56,7 @@ def test_pretty_print_file_arg_none():
     result = PrettyJson.pretty_print_file(target)
 
     assert not result, "Not expected return"
+
 
 def test_pretty_print_file_invalid_path():
     """
@@ -63,12 +67,14 @@ def test_pretty_print_file_invalid_path():
 
     assert not result, "Not expected return"
 
+
 def test_run_workfolder_none():
     """
     Testing run return false when workfolder is none
     """
     var = PrettyJson(None, None)
     assert not var.run(), "This should not be able to run"
+
 
 def test_run_invalid_workfolder():
     """
@@ -77,6 +83,7 @@ def test_run_invalid_workfolder():
     target = "Invalid/path/test.txt"
     var = PrettyJson(target, None)
     assert not var.run(), "This should not be able to run"
+
 
 def test_run(file_system):
     """

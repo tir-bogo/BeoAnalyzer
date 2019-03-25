@@ -8,6 +8,7 @@ from logfile.operations.operation_base import OperationBase
 
 # pylint: disable=W1203
 
+
 class PrettyJson(OperationBase):
     """
     This class is responseable for pretty printing json files
@@ -31,8 +32,8 @@ class PrettyJson(OperationBase):
                     handle.close()
 
                 with open(filepath, 'w') as handle:
-                    pretty_json = json.dumps(json_data, sort_keys=True, indent=4)
-                    handle.write(pretty_json)
+                    pretty = json.dumps(json_data, sort_keys=True, indent=4)
+                    handle.write(pretty)
                     handle.close()
                 return True
 

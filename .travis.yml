@@ -1,5 +1,6 @@
 language: python
 python:
   "3.6"
-# command to run tests
-script: pytest
+script: 
+  - pytest
+  - bash lint_check.sh
