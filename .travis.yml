@@ -3,4 +3,4 @@ python:
   "3.6"
 script: 
   - pytest
-  - bash pylint_check.sh
+  - bash lint_check.sh
