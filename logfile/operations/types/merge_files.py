@@ -129,16 +129,16 @@ class MergeFiles(OperationBase):
         directory_path = self.make_directory_path(self.directory_instruction)
         recursive = self.recursive_instruction
         output_name = self.output_name_instruction
-        regex = self.regex_expression_instruction
+        regex_string = self.regex_expression_instruction
         delete = self.delete_instruction
         sort_type = self.sort_type_instruction
 
-        if regex and \
+        if regex_string and \
            output_name and \
            directory_path and \
            Path(directory_path).exists():
 
-            regex = re.compile(regex)
+            regex = re.compile(regex_string)
 
             directories = None
             if recursive:
