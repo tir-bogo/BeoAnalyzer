@@ -4,6 +4,7 @@ Module contains a base class for file operations
 import abc
 import logging
 from pathlib import Path
+from typing import List, Dict
 
 # pylint: disable=W1203
 
@@ -12,16 +13,17 @@ class OperationBase(metaclass=abc.ABCMeta):
     """
     Base class for sharing methods across file operations
     """
-    def __init__(self, workfolder: str, instructions: dict):
+    def __init__(self, workfolder: str, instructions: Dict[str, str]):
         logging.info(f"Running FileOperation'{self.__class__.__name__}'")
         self._workfolder = workfolder
         self._instructions = instructions
+
         if not self._instructions:
             logging.warning(r"Instructions is set to None, set it to {}")
             self._instructions = {}
 
     @staticmethod
-    def _log_instruction(instrution_key, instruction_value) -> None:
+    def _log_instruction(instrution_key: str, instruction_value: str) -> None:
         """
         Logs instrution
         """
@@ -33,7 +35,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         """
         logging.info(f"'{self.__class__.__name__}'Execution done successfully")
 
-    def _log_run_failed(self, message="") -> None:
+    def _log_run_failed(self, message: str) -> None:
         """
         """
         class_name = self.__class__.__name__
@@ -70,13 +72,13 @@ class OperationBase(metaclass=abc.ABCMeta):
         recursive_key = "Recursive"
         val = False
         if recursive_key in self._instructions:
-            val = self._instructions[recursive_key].lower()
-            val = (val == "true")
-        self._log_instruction(recursive_key, val)
+            value_found = self._instructions[recursive_key].lower()
+            val = (value_found == "true")
+        self._log_instruction(recursive_key, str(val))
         return val
 
     @property
-    def exclude_files_instruction(self) -> list:
+    def exclude_files_instruction(self) -> List[str]:
         """
         Get file names to exclude from instructions
 
@@ -86,11 +88,12 @@ class OperationBase(metaclass=abc.ABCMeta):
         Default value: []
         """
         exclude_files_key = "ExcludeFiles"
-        val = []
+        val: List[str] = []
         if exclude_files_key in self._instructions:
             value = self._instructions[exclude_files_key]
             val = value.split('|')
-        self._log_instruction(exclude_files_key, val)
+
+        self._log_instruction(exclude_files_key, str(val))
         return val
 
     @property
@@ -104,11 +107,11 @@ class OperationBase(metaclass=abc.ABCMeta):
         Default value: []
         """
         exclude_extensions_key = "ExcludeExtensions"
-        val = []
+        val: List[str] = []
         if exclude_extensions_key in self._instructions:
             value = self._instructions[exclude_extensions_key]
             val = value.split('|')
-        self._log_instruction(exclude_extensions_key, val)
+        self._log_instruction(exclude_extensions_key, str(val))
         return val
 
     @property
@@ -129,7 +132,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         return val
 
     @property
-    def output_name_instruction(self):
+    def output_name_instruction(self) -> str:
         """
         Get output name from instructions
 
@@ -146,7 +149,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         return val
 
     @property
-    def regex_expression_instruction(self):
+    def regex_expression_instruction(self) -> str:
         """
         Get regex expression from instructions
 
@@ -163,7 +166,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         return val
 
     @property
-    def delete_instruction(self):
+    def delete_instruction(self) -> bool:
         """
         Get delete instruction from instructions
 
@@ -176,11 +179,11 @@ class OperationBase(metaclass=abc.ABCMeta):
         val = False
         if delete_key in self._instructions:
             val = self._instructions[delete_key].lower() == "true"
-        self._log_instruction(delete_key, val)
+        self._log_instruction(delete_key, str(val))
         return val
 
     @property
-    def sort_type_instruction(self):
+    def sort_type_instruction(self) -> str:
         """
         Get SortType instruction from instructions
 
@@ -218,7 +221,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         return val
 
     @staticmethod
-    def get_files(directory: str, recursive: bool) -> list:
+    def get_files(directory: str, recursive: bool) -> List[str]:
         """
         Getting files from directory
 
@@ -229,7 +232,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         Returns:
             list: Filepaths
         """
-        files = []
+        files: List[str] = []
         if directory:
             path = Path(directory)
             if path.exists():
@@ -241,7 +244,7 @@ class OperationBase(metaclass=abc.ABCMeta):
         return files
 
     @staticmethod
-    def get_directories(directory: str, recursive: bool) -> bool:
+    def get_directories(directory: str, recursive: bool) -> List[str]:
         """
          Getting sub directories from directory
 

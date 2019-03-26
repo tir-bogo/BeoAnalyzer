@@ -6,6 +6,7 @@ import gzip
 import tarfile
 import logging
 from pathlib import Path
+from typing import Optional
 from logfile.operations.operation_base import OperationBase
 
 # pylint: disable=W1203
@@ -23,7 +24,7 @@ class UnzipFiles(OperationBase):
             true is recursive through current folder and subs
     """
     @staticmethod
-    def extract_tar(filepath: str) -> str:
+    def extract_tar(filepath: str) -> Optional[str]:
         """
         Extracting tar file
 
@@ -35,11 +36,8 @@ class UnzipFiles(OperationBase):
             None: Tar extracting failed
         """
         if filepath and Path(filepath).exists():
-            filepath = Path(filepath)
-            extract_to = filepath.parent / filepath.stem
-
-            filepath = filepath.as_posix()
-            extract_to = extract_to.as_posix()
+            target_file = Path(filepath)
+            extract_to = (target_file.parent / target_file.stem).as_posix()
 
             try:
                 logging.debug(f"Create directory '{extract_to}'")
@@ -75,9 +73,8 @@ class UnzipFiles(OperationBase):
             bool: Gz extract success
         """
         if filepath and Path(filepath).exists():
-            filepath = Path(filepath)
-            extract_to = (filepath.parent / filepath.stem).as_posix()
-            filepath = filepath.as_posix()
+            target = Path(filepath)
+            extract_to = (target.parent / target.stem).as_posix()
 
             try:
                 logging.debug(f"Extracting '{filepath}' to '{extract_to}'")
@@ -88,7 +85,7 @@ class UnzipFiles(OperationBase):
                 output.close()
 
                 logging.debug(f"Deleted file '{filepath}'")
-                Path(filepath).unlink()
+                target.unlink()
                 return True
 
             except OSError as exc:

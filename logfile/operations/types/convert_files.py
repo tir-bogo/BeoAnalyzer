@@ -1,8 +1,9 @@
 """
 Module contains file operation to convert files to new extensions
 """
-from pathlib import Path
 import logging
+from pathlib import Path
+from typing import List
 from logfile.operations.operation_base import OperationBase
 
 # pylint: disable=W1203
@@ -54,7 +55,7 @@ class ConvertFiles(OperationBase):
         return False
 
     @staticmethod
-    def list_item_in_string(arr: list, item: str) -> bool:
+    def list_item_in_string(arr: List[str], item: str) -> bool:
         """
         Checks if any part in a list match a string
         Example:
@@ -76,7 +77,7 @@ class ConvertFiles(OperationBase):
         return False
 
     @staticmethod
-    def sort_files(files: list, filters: list):
+    def sort_files(files: List[str], filters: List[str]):
         """
         Discard files where filters match file
 

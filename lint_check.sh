@@ -11,3 +11,10 @@ if [ $? -ne 0 ]; then
   echo "An error occured wile running pycodestyle" >&2
   exit 1
 fi
+
+echo "Running mypy validation"
+find . -iname "*.py" | xargs mypy --namespace-packages --ignore-missing-imports
+if [ $? -ne 0 ]; then
+  echo "An error occured wile running mypy" >&2
+  exit 1
+fi

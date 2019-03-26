@@ -4,7 +4,7 @@ Module contains file operation to merge files together
 import re
 import fileinput
 import logging
-from typing import Pattern
+from typing import Pattern, List
 from pathlib import Path
 from logfile.operations.operation_base import OperationBase
 
@@ -38,7 +38,8 @@ class MergeFiles(OperationBase):
     """
 
     @staticmethod
-    def match_files_with_regex(files: list, regex: Pattern[str]) -> list:
+    def match_files_with_regex(files: List[str],
+                               regex: Pattern[str]) -> List[str]:
         """
         Matching files with regex expression
 
@@ -58,7 +59,7 @@ class MergeFiles(OperationBase):
         return result
 
     @staticmethod
-    def sort_files(files: list, regex: Pattern[str]) -> list:
+    def sort_files(files: List[str], regex: Pattern[str]) -> List[str]:
         """
         Sorting files using first group item in regex match
 
@@ -79,7 +80,7 @@ class MergeFiles(OperationBase):
         return files
 
     @staticmethod
-    def merge_files(new_file_path: str, files: list) -> bool:
+    def merge_files(new_file_path: str, files: List[str]) -> bool:
         """
         Merging files together with that order arg files is in
 
@@ -101,7 +102,7 @@ class MergeFiles(OperationBase):
         return False
 
     @staticmethod
-    def delete_files(files: list) -> bool:
+    def delete_files(files: List[str]) -> bool:
         """
         Delete files
 
@@ -128,16 +129,16 @@ class MergeFiles(OperationBase):
         directory_path = self.make_directory_path(self.directory_instruction)
         recursive = self.recursive_instruction
         output_name = self.output_name_instruction
-        regex = self.regex_expression_instruction
+        regex_string = self.regex_expression_instruction
         delete = self.delete_instruction
         sort_type = self.sort_type_instruction
 
-        if regex and \
+        if regex_string and \
            output_name and \
            directory_path and \
            Path(directory_path).exists():
 
-            regex = re.compile(regex)
+            regex = re.compile(regex_string)
 
             directories = None
             if recursive:
@@ -167,5 +168,5 @@ class MergeFiles(OperationBase):
             self._log_run_success()
             return True
 
-        self._log_run_failed()
+        self._log_run_failed("No files affected")
         return False
